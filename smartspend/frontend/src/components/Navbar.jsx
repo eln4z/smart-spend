@@ -24,14 +24,18 @@ export default function Navbar() {
   });
 
   const iconBtnStyle = {
-    background: darkMode ? "#2a2a4e" : "#f0f0f0",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: 8,
+    background: darkMode 
+      ? "linear-gradient(135deg, #2a2a4e 0%, #1f1f3a 100%)" 
+      : "linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%)",
+    border: darkMode ? "1px solid rgba(108, 92, 231, 0.3)" : "1px solid rgba(108, 92, 231, 0.15)",
+    padding: "10px 18px",
+    borderRadius: 10,
     cursor: "pointer",
     fontSize: 14,
     textDecoration: "none",
-    color: darkMode ? "#ddd" : "#555"
+    color: darkMode ? "#ddd" : "#555",
+    transition: "all 0.2s ease",
+    fontWeight: 500
   };
 
   // Get days in month
@@ -81,14 +85,21 @@ export default function Navbar() {
 
   return (
     <div style={{
-      background: darkMode ? "#16213e" : "white",
+      background: darkMode 
+        ? "linear-gradient(135deg, #16213e 0%, #1a1a2e 100%)" 
+        : "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
       padding: "0 40px",
       display: "flex",
       alignItems: "center",
-      boxShadow: darkMode ? "0 2px 8px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.06)",
+      boxShadow: darkMode 
+        ? "0 4px 20px rgba(0,0,0,0.3)" 
+        : "0 4px 20px rgba(108, 92, 231, 0.08)",
       position: "sticky",
       top: 0,
-      zIndex: 100
+      zIndex: 100,
+      borderBottom: darkMode 
+        ? "1px solid rgba(108, 92, 231, 0.2)" 
+        : "1px solid rgba(108, 92, 231, 0.1)"
     }}>
       <img 
         src={darkMode ? "/logo.png" : "/logo.jpg"}
@@ -112,10 +123,12 @@ export default function Navbar() {
         <button 
           onClick={() => setShowCalendar(!showCalendar)}
           style={{ 
-            background: darkMode ? "#2a2a4e" : "#f0f0f0",
-            border: "none",
+            background: darkMode 
+              ? "linear-gradient(135deg, #2a2a4e 0%, #1f1f3a 100%)" 
+              : "linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%)",
+            border: darkMode ? "1px solid rgba(108, 92, 231, 0.3)" : "1px solid rgba(108, 92, 231, 0.15)",
             padding: "8px 16px",
-            borderRadius: 8,
+            borderRadius: 10,
             cursor: "pointer",
             fontSize: 14,
             color: darkMode ? "#ddd" : "#555"
@@ -401,11 +414,13 @@ export default function Navbar() {
         <NavLink to="/settings" style={iconBtnStyle}>⚙️ Settings</NavLink>
         <NavLink to="/profile" style={{
           ...iconBtnStyle,
-          background: "#6c5ce7",
+          background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
           color: "white",
           display: "flex",
           alignItems: "center",
-          gap: 8
+          gap: 8,
+          border: "none",
+          boxShadow: "0 4px 15px rgba(108, 92, 231, 0.3)"
         }}>
           👤 Profile
         </NavLink>
