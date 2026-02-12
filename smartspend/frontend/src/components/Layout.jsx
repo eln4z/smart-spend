@@ -1,4 +1,5 @@
 import Navbar from "./Navbar";
+import ChatBot from "./ChatBot";
 
 export default function Layout({ children }) {
   return (
@@ -7,6 +8,7 @@ export default function Layout({ children }) {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px" }}>
         {children}
       </div>
+      <ChatBot />
     </div>
   );
 }

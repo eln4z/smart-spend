@@ -39,7 +39,7 @@ A simple web-based budgeting and spending insight application for students and y
    **Note:** The default port is `5173`, but if that port is in use, Vite will automatically try the next available port (5174, 5175, etc.). Check the terminal output for the exact URL:
 
    ```
-   ➜  Local:   http://localhost:5173/
+   ➜  Local:   http://localhost:5190/
    ```
 
    Example addresses:

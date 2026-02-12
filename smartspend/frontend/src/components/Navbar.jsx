@@ -28,14 +28,18 @@ export default function Navbar() {
       ? "linear-gradient(135deg, #2a2a4e 0%, #1f1f3a 100%)" 
       : "linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%)",
     border: darkMode ? "1px solid rgba(108, 92, 231, 0.3)" : "1px solid rgba(108, 92, 231, 0.15)",
-    padding: "10px 18px",
+    padding: "10px 20px",
     borderRadius: 10,
     cursor: "pointer",
     fontSize: 14,
     textDecoration: "none",
     color: darkMode ? "#ddd" : "#555",
     transition: "all 0.2s ease",
-    fontWeight: 500
+    fontWeight: 500,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    whiteSpace: "nowrap"
   };
 
   // Get days in month
@@ -118,8 +122,9 @@ export default function Navbar() {
         <NavLink to="/breakdown" style={linkStyle}>Breakdown</NavLink>
         <NavLink to="/prediction" style={linkStyle}>Prediction</NavLink>
         <NavLink to="/categories" style={linkStyle}>Categories</NavLink>
+        <NavLink to="/smarttips" style={linkStyle}>SmartTips</NavLink>
       </nav>
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14, position: "relative" }}>
         <button 
           onClick={() => setShowCalendar(!showCalendar)}
           style={{ 
@@ -127,14 +132,19 @@ export default function Navbar() {
               ? "linear-gradient(135deg, #2a2a4e 0%, #1f1f3a 100%)" 
               : "linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%)",
             border: darkMode ? "1px solid rgba(108, 92, 231, 0.3)" : "1px solid rgba(108, 92, 231, 0.15)",
-            padding: "8px 16px",
+            padding: "10px 20px",
             borderRadius: 10,
             cursor: "pointer",
             fontSize: 14,
-            color: darkMode ? "#ddd" : "#555"
+            fontWeight: 500,
+            color: darkMode ? "#ddd" : "#555",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            whiteSpace: "nowrap"
           }}
         >
-          📅 {currentMonthName}
+          <span>📅</span> <span>{currentMonthName}</span>
         </button>
 
         {/* Calendar Dropdown */}
