@@ -1,31 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useData } from "../context/DataContext";
 
 export default function Categories() {
+  const { transactions: globalTransactions, updateTransaction } = useData();
   const [searchTerm, setSearchTerm] = useState("");
-  const [transactions, setTransactions] = useState([
-    { id: 1, description: "Tesco Superstore", amount: 87.50, suggestedCategory: "Food", editedCategory: "" },
-    { id: 2, description: "Uber Trip", amount: 12.50, suggestedCategory: "Transport", editedCategory: "" },
-    { id: 3, description: "Netflix", amount: 12.99, suggestedCategory: "Entertainment", editedCategory: "" },
-    { id: 4, description: "Amazon Prime", amount: 8.99, suggestedCategory: "Subscriptions", editedCategory: "" },
-    { id: 5, description: "Costa Coffee", amount: 4.50, suggestedCategory: "Food", editedCategory: "" },
-    { id: 6, description: "TfL Oyster", amount: 35.00, suggestedCategory: "Transport", editedCategory: "" },
-    { id: 7, description: "Deliveroo", amount: 18.99, suggestedCategory: "Food", editedCategory: "" },
-    { id: 8, description: "Spotify", amount: 10.99, suggestedCategory: "Entertainment", editedCategory: "" }
-  ]);
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  
+  // Create local state with editedCategory field
+  const [localTransactions, setLocalTransactions] = useState([]);
+
+  // Sync local state with global transactions
+  useEffect(() => {
+    setLocalTransactions(
+      globalTransactions.map(t => ({
+        ...t,
+        suggestedCategory: t.category,
+        editedCategory: ""
+      }))
+    );
+  }, [globalTransactions]);
 
   const categories = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
 
   const handleCategoryChange = (id, newCategory) => {
-    setTransactions(transactions.map(t => 
+    setLocalTransactions(localTransactions.map(t => 
       t.id === id ? { ...t, editedCategory: newCategory } : t
     ));
   };
 
-  const filteredTransactions = transactions.filter(t => 
-    t.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleReset = () => {
+    setLocalTransactions(
+      globalTransactions.map(t => ({
+        ...t,
+        suggestedCategory: t.category,
+        editedCategory: ""
+      }))
+    );
+  };
 
-  const hasChanges = transactions.some(t => t.editedCategory && t.editedCategory !== t.suggestedCategory);
+  const handleSave = () => {
+    // Update all transactions that have changes
+    let changeCount = 0;
+    localTransactions.forEach(t => {
+      if (t.editedCategory && t.editedCategory !== t.suggestedCategory) {
+        updateTransaction(t.id, { category: t.editedCategory });
+        changeCount++;
+      }
+    });
+    
+    if (changeCount > 0) {
+      alert(`✅ Saved ${changeCount} category change${changeCount > 1 ? 's' : ''}! Charts will update automatically.`);
+    } else {
+      alert("No changes to save.");
+    }
+  };
+
+  const filteredTransactions = localTransactions.filter(t => {
+    const matchesSearch = t.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === "All Categories" || 
+      (t.editedCategory || t.suggestedCategory) === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const hasChanges = localTransactions.some(t => t.editedCategory && t.editedCategory !== t.suggestedCategory);
+  const changeCount = localTransactions.filter(t => t.editedCategory && t.editedCategory !== t.suggestedCategory).length;
 
   return (
     <div>
@@ -43,7 +81,11 @@ export default function Categories() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select style={{ width: "auto", padding: "10px 16px" }}>
+          <select 
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            style={{ width: "auto", padding: "10px 16px" }}
+          >
             <option>All Categories</option>
             {categories.map(cat => <option key={cat}>{cat}</option>)}
           </select>
@@ -100,21 +142,27 @@ export default function Categories() {
 
       {/* Save Actions */}
       <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ color: "#888" }}>
+        <div style={{ color: hasChanges ? "#f39c12" : "#888" }}>
           {hasChanges 
-            ? `✏️ You have unsaved changes` 
+            ? `✏️ You have ${changeCount} unsaved change${changeCount > 1 ? 's' : ''}` 
             : `✅ All categories are up to date`
           }
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button 
             className="btn" 
-            style={{ background: "#eee", color: "#555" }}
-            onClick={() => setTransactions(transactions.map(t => ({ ...t, editedCategory: "" })))}
+            style={{ background: "#eee", color: "#555", opacity: hasChanges ? 1 : 0.5 }}
+            onClick={handleReset}
+            disabled={!hasChanges}
           >
             Reset Changes
           </button>
-          <button className="btn">
+          <button 
+            className="btn"
+            style={{ opacity: hasChanges ? 1 : 0.5 }}
+            onClick={handleSave}
+            disabled={!hasChanges}
+          >
             💾 Save & Recalculate
           </button>
         </div>

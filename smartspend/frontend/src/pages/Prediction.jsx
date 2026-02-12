@@ -1,9 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Prediction() {
-  const [startingBalance, setStartingBalance] = useState(1500);
+  // Load starting balance from user profile (monthly budget)
+  const [startingBalance, setStartingBalance] = useState(() => {
+    const savedUser = localStorage.getItem("smartspend_user");
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      return user.monthlyBudget || 1500;
+    }
+    return 1500;
+  });
   const [weeklySpend, setWeeklySpend] = useState(300);
   const [recurringCosts, setRecurringCosts] = useState(450);
+
+  // Listen for changes to user profile in localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedUser = localStorage.getItem("smartspend_user");
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
+        if (user.monthlyBudget) {
+          setStartingBalance(user.monthlyBudget);
+        }
+      }
+    };
+
+    // Check for updates when component mounts and when window gets focus
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("focus", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleStorageChange);
+    };
+  }, []);
 
   const weeksLeft = 2;
   const projectedBalance = startingBalance - (weeklySpend * weeksLeft) - recurringCosts;

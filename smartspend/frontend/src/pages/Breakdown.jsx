@@ -1,23 +1,46 @@
 import { Pie, Line } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement } from "chart.js";
+import { useData } from "../context/DataContext";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement);
 
 export default function Breakdown() {
+  const { transactions, getTotalSpent, getSpendingByCategory } = useData();
+  
+  const totalSpent = getTotalSpent();
+  const spendingByCategory = getSpendingByCategory();
+  
+  const categoryNames = Object.keys(spendingByCategory);
+  const categoryAmounts = Object.values(spendingByCategory);
+
   const pieData = {
-    labels: ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Other"],
+    labels: categoryNames,
     datasets: [{
-      data: [320, 180, 150, 450, 140, 60],
-      backgroundColor: ["#e74c3c", "#3498db", "#9b59b6", "#2ecc71", "#f39c12", "#95a5a6"],
+      data: categoryAmounts,
+      backgroundColor: ["#e74c3c", "#3498db", "#9b59b6", "#2ecc71", "#f39c12", "#95a5a6", "#1abc9c"],
       borderWidth: 0
     }]
   };
 
+  // Group transactions by week for trend chart
+  const getWeeklySpending = () => {
+    const weeks = {};
+    transactions.forEach(t => {
+      const date = new Date(t.date);
+      const weekNum = Math.ceil(date.getDate() / 7);
+      const key = `Week ${weekNum}`;
+      weeks[key] = (weeks[key] || 0) + t.amount;
+    });
+    return weeks;
+  };
+  
+  const weeklySpending = getWeeklySpending();
+
   const lineData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+    labels: Object.keys(weeklySpending).length > 0 ? Object.keys(weeklySpending) : ["Week 1", "Week 2", "Week 3", "Week 4"],
     datasets: [{
       label: "Spending (£)",
-      data: [280, 350, 290, 380],
+      data: Object.keys(weeklySpending).length > 0 ? Object.values(weeklySpending) : [0, 0, 0, 0],
       borderColor: "#6c5ce7",
       backgroundColor: "rgba(108, 92, 231, 0.1)",
       fill: true,
@@ -25,14 +48,12 @@ export default function Breakdown() {
     }]
   };
 
-  const categories = [
-    { name: "Bills", total: 450, percent: 34.6, trend: "stable" },
-    { name: "Food", total: 320, percent: 24.6, trend: "up" },
-    { name: "Transport", total: 180, percent: 13.8, trend: "down" },
-    { name: "Entertainment", total: 150, percent: 11.5, trend: "up" },
-    { name: "Shopping", total: 140, percent: 10.8, trend: "stable" },
-    { name: "Other", total: 60, percent: 4.6, trend: "stable" }
-  ];
+  // Build categories array with percentages
+  const categories = categoryNames.map(name => ({
+    name,
+    total: spendingByCategory[name],
+    percent: totalSpent > 0 ? ((spendingByCategory[name] / totalSpent) * 100) : 0
+  })).sort((a, b) => b.total - a.total);
 
   return (
     <div>
@@ -61,48 +82,46 @@ export default function Breakdown() {
       {/* Category Table */}
       <div className="card">
         <h3 style={{ marginBottom: 16 }}>📋 Category Breakdown</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th style={{ textAlign: "right" }}>Total</th>
-              <th style={{ textAlign: "right" }}>% of Spending</th>
-              <th style={{ textAlign: "center" }}>Trend</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat, i) => (
-              <tr key={i}>
-                <td style={{ fontWeight: 500 }}>{cat.name}</td>
-                <td style={{ textAlign: "right" }}>£{cat.total.toFixed(2)}</td>
-                <td style={{ textAlign: "right" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
-                    <div style={{ 
-                      width: 60, 
-                      height: 8, 
-                      background: "#eee", 
-                      borderRadius: 4,
-                      overflow: "hidden"
-                    }}>
-                      <div style={{ 
-                        width: `${cat.percent}%`, 
-                        height: "100%", 
-                        background: "#6c5ce7",
-                        borderRadius: 4
-                      }} />
-                    </div>
-                    {cat.percent}%
-                  </div>
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  {cat.trend === "up" && <span style={{ color: "#e74c3c" }}>↑</span>}
-                  {cat.trend === "down" && <span style={{ color: "#2ecc71" }}>↓</span>}
-                  {cat.trend === "stable" && <span style={{ color: "#888" }}>→</span>}
-                </td>
+        {categories.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th style={{ textAlign: "right" }}>Total</th>
+                <th style={{ textAlign: "right" }}>% of Spending</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {categories.map((cat, i) => (
+                <tr key={i}>
+                  <td style={{ fontWeight: 500 }}>{cat.name}</td>
+                  <td style={{ textAlign: "right" }}>£{cat.total.toFixed(2)}</td>
+                  <td style={{ textAlign: "right" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+                      <div style={{ 
+                        width: 60, 
+                        height: 8, 
+                        background: "#eee", 
+                        borderRadius: 4,
+                        overflow: "hidden"
+                      }}>
+                        <div style={{ 
+                          width: `${cat.percent}%`, 
+                          height: "100%", 
+                          background: "#6c5ce7",
+                          borderRadius: 4
+                        }} />
+                      </div>
+                      {cat.percent.toFixed(1)}%
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p style={{ color: "#888" }}>No transactions yet. Add some in Settings!</p>
+        )}
       </div>
     </div>
   );

@@ -100,6 +100,62 @@ input, select {
   width: 100%;
 }
 
+/* Dark Mode Styles */
+body.dark-mode {
+  background: #1a1a2e;
+  color: #eee;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3 {
+  color: #fff;
+}
+
+body.dark-mode .card {
+  background: #16213e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .card-value {
+  color: #fff;
+}
+
+body.dark-mode th {
+  background: #1a1a2e;
+  color: #aaa;
+}
+
+body.dark-mode tr:hover {
+  background: #1a1a2e;
+}
+
+body.dark-mode td {
+  border-bottom-color: #2a2a4e;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: #1a1a2e;
+  border-color: #3a3a5e;
+  color: #eee;
+}
+
+body.dark-mode .alert-item {
+  background: #2a2a4e;
+}
+
+body.dark-mode .alert-item.warning {
+  background: #3a3020;
+}
+
+body.dark-mode .alert-item.info {
+  background: #1a2a3e;
+}
+
+/* Dark mode for navbar - need to style inline styles via JS */
+
 input:focus, select:focus {
   outline: none;
   border-color: #6c5ce7;
