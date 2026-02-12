@@ -1,5 +1,19 @@
 import { useState, useEffect } from "react";
 
+// Avatar options - stored in public/avatars folder
+const avatarOptions = [
+  { id: "bunny1", name: "Cute Bunny 1", file: "Cute bunny budgeting 1.jpg" },
+  { id: "bunny2", name: "Cute Bunny 2", file: "Cute bunny budgeting 2.jpg" },
+  { id: "girl1", name: "Budget Girl 1", file: "Cute budgeting adventures girl 1.jpg" },
+  { id: "girl2", name: "Budget Girl 2", file: "Cute budgeting adventures girl 2.jpg" },
+  { id: "piggy", name: "Piggy Bank Nerd", file: "Piggy Bank Nerd.jpg" },
+  { id: "student", name: "Budgeting Student", file: "Budgeting Student with Phone.jpg" },
+  { id: "cat", name: "Money Cat", file: "Money Cat Graduate.jpg" },
+  { id: "confused", name: "Confused Student", file: "Confused Student with Bills.jpg" },
+  { id: "robot", name: "Budget Robot", file: "Budget Robot Assistant.jpg" },
+  { id: "stack", name: "Study & Savings", file: "Study & Savings Stack.jpg" }
+];
+
 export default function Profile() {
   // Load user from localStorage or use defaults
   const [user, setUser] = useState(() => {
@@ -11,11 +25,13 @@ export default function Profile() {
       phone: "+44 7123 456789",
       occupation: "Professional",
       monthlyBudget: 1500,
-      currency: "GBP (£)"
+      currency: "GBP (£)",
+      avatar: null
     };
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSelectingAvatar, setIsSelectingAvatar] = useState(false);
   const [editForm, setEditForm] = useState({ ...user });
 
   // Save to localStorage when user changes
@@ -50,20 +66,49 @@ export default function Profile() {
         {/* Profile Info */}
         <div className="card">
           <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
-            <div style={{
-              width: 80,
-              height: 80,
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #6c5ce7, #a29bfe)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontSize: 32,
-              fontWeight: 700,
-              marginRight: 20
-            }}>
-              {user.name.split(" ").map(n => n[0]).join("")}
+            <div 
+              onClick={() => setIsSelectingAvatar(true)}
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: "50%",
+                background: user.avatar ? "transparent" : "linear-gradient(135deg, #6c5ce7, #a29bfe)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontSize: 32,
+                fontWeight: 700,
+                marginRight: 20,
+                cursor: "pointer",
+                overflow: "hidden",
+                border: "3px solid #6c5ce7",
+                position: "relative"
+              }}
+              title="Click to change avatar"
+            >
+              {user.avatar ? (
+                <img 
+                  src={`/avatars/${avatarOptions.find(a => a.id === user.avatar)?.file}`}
+                  alt="Profile avatar"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                user.name.split(" ").map(n => n[0]).join("")
+              )}
+              <div style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: "rgba(108, 92, 231, 0.8)",
+                color: "white",
+                fontSize: 10,
+                padding: "2px 0",
+                textAlign: "center"
+              }}>
+                Change
+              </div>
             </div>
             <div>
               <h2 style={{ marginBottom: 4 }}>{user.name}</h2>
@@ -303,6 +348,115 @@ export default function Profile() {
                 💾 Save Changes
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Avatar Selection Modal */}
+      {isSelectingAvatar && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000
+        }}>
+          <div style={{ 
+            background: "white", 
+            padding: 32, 
+            borderRadius: 12, 
+            width: 600, 
+            maxWidth: "90%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            position: "relative"
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setIsSelectingAvatar(false)}
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                background: "#e74c3c",
+                color: "white",
+                border: "none",
+                borderRadius: 6,
+                padding: "6px 12px",
+                cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 500
+              }}
+            >
+              ✕ Close
+            </button>
+
+            <h2 style={{ marginBottom: 8 }}>🎨 Choose Your Avatar</h2>
+            <p style={{ color: "#888", marginBottom: 24 }}>Select a fun avatar to personalize your profile</p>
+            
+            <div style={{ 
+              display: "grid", 
+              gridTemplateColumns: "repeat(5, 1fr)", 
+              gap: 16 
+            }}>
+              {avatarOptions.map((avatar) => (
+                <div
+                  key={avatar.id}
+                  onClick={() => {
+                    setUser({ ...user, avatar: avatar.id });
+                    setIsSelectingAvatar(false);
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    border: user.avatar === avatar.id ? "3px solid #6c5ce7" : "3px solid transparent",
+                    borderRadius: 12,
+                    padding: 8,
+                    background: user.avatar === avatar.id ? "#f0ebff" : "#f8f9fa",
+                    transition: "all 0.2s ease",
+                    textAlign: "center"
+                  }}
+                >
+                  <img 
+                    src={`/avatars/${avatar.file}`}
+                    alt={avatar.name}
+                    style={{ 
+                      width: "100%", 
+                      aspectRatio: "1", 
+                      objectFit: "cover",
+                      borderRadius: 8
+                    }}
+                  />
+                  <div style={{ fontSize: 11, marginTop: 6, color: "#666" }}>
+                    {avatar.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Remove Avatar Option */}
+            {user.avatar && (
+              <button
+                onClick={() => {
+                  setUser({ ...user, avatar: null });
+                  setIsSelectingAvatar(false);
+                }}
+                style={{
+                  marginTop: 20,
+                  width: "100%",
+                  padding: 12,
+                  background: "#fee",
+                  border: "1px solid #fcc",
+                  borderRadius: 8,
+                  color: "#c44",
+                  cursor: "pointer",
+                  fontWeight: 500
+                }}
+              >
+                🗑️ Remove Avatar (Use Initials)
+              </button>
+            )}
           </div>
         </div>
       )}

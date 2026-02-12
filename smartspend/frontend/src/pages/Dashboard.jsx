@@ -5,8 +5,21 @@ import { useData } from "../context/DataContext";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+// Get user's first name from localStorage
+const getUserFirstName = () => {
+  const saved = localStorage.getItem("smartspend_user");
+  if (saved) {
+    const user = JSON.parse(saved);
+    return user.name?.split(" ")[0] || "there";
+  }
+  return "there";
+};
+
 export default function Dashboard() {
   const { transactions, getTotalSpent, getSpendingByCategory, deleteTransaction, addTransaction } = useData();
+  
+  // Get user's first name from localStorage
+  const userName = getUserFirstName();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [newExpense, setNewExpense] = useState({
@@ -70,8 +83,8 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 8 }}>Dashboard</h1>
-      <p style={{ color: "#888", marginBottom: 32 }}>Your spending overview for February 2026</p>
+      <h1 style={{ marginBottom: 8 }}>Hi {userName}! 👋</h1>
+      <p style={{ color: "#888", marginBottom: 32 }}>Here is your spending overview for February 2026</p>
 
       {/* Summary Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 24 }}>

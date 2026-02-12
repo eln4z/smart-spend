@@ -90,15 +90,18 @@ export default function Navbar() {
       top: 0,
       zIndex: 100
     }}>
-      <span style={{ 
-        fontWeight: 700, 
-        fontSize: 24, 
-        marginRight: 60,
-        color: "#6c5ce7",
-        padding: "20px 0"
-      }}>
-        💰 SmartSpend
-      </span>
+      <img 
+        src={darkMode ? "/logo.png" : "/logo.jpg"}
+        alt="SmartSpend" 
+        style={{ 
+          height: darkMode ? 80 : 50,
+          width: "auto",
+          marginRight: 40,
+          marginTop: darkMode ? -10 : 0,
+          marginBottom: darkMode ? -10 : 0,
+          objectFit: "contain"
+        }}
+      />
       <nav style={{ display: "flex" }}>
         <NavLink to="/" style={linkStyle}>Dashboard</NavLink>
         <NavLink to="/breakdown" style={linkStyle}>Breakdown</NavLink>

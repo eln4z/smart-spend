@@ -23,6 +23,7 @@ export function DataProvider({ children }) {
     return saved ? JSON.parse(saved) : defaultTransactions;
   });
 
+  // eslint-disable-next-line no-unused-vars
   const [categories, setCategories] = useState(() => {
     const saved = localStorage.getItem("smartspend_categories");
     return saved ? JSON.parse(saved) : defaultCategories;
