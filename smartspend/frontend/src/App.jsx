@@ -15,21 +15,30 @@ function App() {
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/breakdown" element={<Breakdown />} />
+          <Route path="/prediction" element={<Prediction />} />
+          <Route path="/categories" element={<Categories />} />
+        </Routes>
+      </Layout>
+    </>
+  );
       </p>
     </>
-  )
+export default function App() {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/breakdown" element={<Breakdown />} />
+        <Route path="/prediction" element={<Prediction />} />
+        <Route path="/categories" element={<Categories />} />
+      </Routes>
+    </Layout>
+  );
+}
 }
 
 export default App
