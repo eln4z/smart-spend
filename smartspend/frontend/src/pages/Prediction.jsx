@@ -282,7 +282,6 @@ export default function Prediction() {
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {subscriptions.map(sub => {
             const isPaid = sub.billingDay <= currentDay && sub.active;
-            const isUpcoming = sub.billingDay > currentDay && sub.active;
             const daysUntil = sub.billingDay - currentDay;
             
             return (

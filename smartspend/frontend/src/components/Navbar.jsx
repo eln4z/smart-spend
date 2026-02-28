@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useData } from "../context/DataContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const { darkMode, transactions } = useData();
+  const { logout, user } = useAuth();
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1)); // February 2026
   const [selectedDate, setSelectedDate] = useState(null);
@@ -432,8 +434,25 @@ export default function Navbar() {
           border: "none",
           boxShadow: "0 4px 15px rgba(108, 92, 231, 0.3)"
         }}>
-          👤 Profile
+          👤 {user?.name?.split(' ')[0] || 'Profile'}
         </NavLink>
+        <button
+          onClick={logout}
+          style={{
+            ...iconBtnStyle,
+            background: "transparent",
+            border: darkMode ? "1px solid rgba(231, 76, 60, 0.3)" : "1px solid rgba(231, 76, 60, 0.2)",
+            color: "#e74c3c",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "rgba(231, 76, 60, 0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "transparent";
+          }}
+        >
+          🚪 Logout
+        </button>
       </div>
     </div>
   );
