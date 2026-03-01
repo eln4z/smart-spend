@@ -2,19 +2,10 @@ import { useState } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { useData } from "../context/DataContext";
+import { useAuth } from "../context/AuthContext";
 import AlertsPanel from "../components/AlertsPanel";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-// Get user's first name from localStorage
-const getUserFirstName = () => {
-  const saved = localStorage.getItem("smartspend_user");
-  if (saved) {
-    const user = JSON.parse(saved);
-    return user.name?.split(" ")[0] || "there";
-  }
-  return "there";
-};
 
 // Financial Score Component
 function FinancialHealthScore({ transactions, settings }) {
@@ -1398,35 +1389,59 @@ function MonthlyReflection({ transactions }) {
 }
 
 export default function Dashboard() {
-  const { transactions, getTotalSpent, getSpendingByCategory, deleteTransaction, addTransaction, settings } = useData();
+  const { transactions, categories, loading, getTotalSpent, getTotalIncome, getSpendingByCategory, deleteTransaction, addTransaction, settings } = useData();
+  const { user } = useAuth();
   
-  // Get user's first name from localStorage
-  const userName = getUserFirstName();
+  // Get user's first name
+  const userName = user?.name?.split(" ")[0] || "there";
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [newExpense, setNewExpense] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
     amount: "",
-    category: "Food"
+    category: "",
+    categoryId: "",
+    type: "expense"
   });
 
-  const categoryOptions = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
+  // Get expense categories from API data
+  const categoryOptions = categories
+    .filter(c => c.type === "expense" || c.type === "both")
+    .map(c => ({ id: c._id, name: c.name, icon: c.icon }));
   
   const totalSpent = getTotalSpent();
+  const _totalIncome = getTotalIncome ? getTotalIncome() : 0;
   const spendingByCategory = getSpendingByCategory();
   
-  const categories = Object.keys(spendingByCategory);
+  const categoryNames = Object.keys(spendingByCategory);
   const amounts = Object.values(spendingByCategory);
   
   const chartData = {
-    labels: categories,
+    labels: categoryNames,
     datasets: [{
       data: amounts,
-      backgroundColor: ["#e74c3c", "#3498db", "#9b59b6", "#2ecc71", "#f39c12", "#1abc9c", "#95a5a6"],
+      backgroundColor: ["#e74c3c", "#3498db", "#9b59b6", "#2ecc71", "#f39c12", "#1abc9c", "#95a5a6", "#6c5ce7", "#fd79a8", "#00cec9"],
       borderWidth: 0
     }]
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        minHeight: "60vh" 
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>💰</div>
+          <p style={{ color: "#666" }}>Loading your data...</p>
+        </div>
+      </div>
+    );
+  }
 
   const alerts = [
     { type: "warning", message: `Total spending this month: £${totalSpent.toFixed(2)}` },
@@ -1445,19 +1460,24 @@ export default function Dashboard() {
     }
   };
 
-  const handleAddExpense = () => {
+  const handleAddExpense = async () => {
     if (newExpense.description && newExpense.amount) {
-      addTransaction({
+      // Find the category object to get its ID
+      const categoryObj = categories.find(c => c.name === newExpense.category);
+      
+      await addTransaction({
         date: newExpense.date,
         description: newExpense.description,
         amount: parseFloat(newExpense.amount),
-        category: newExpense.category
+        category: newExpense.category,
+        categoryId: categoryObj?._id,
+        type: 'expense'
       });
       setNewExpense({
         date: new Date().toISOString().split("T")[0],
         description: "",
         amount: "",
-        category: "Food"
+        category: categoryOptions[0] || "Food"
       });
       setShowAddModal(false);
     }

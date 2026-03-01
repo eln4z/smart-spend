@@ -53,6 +53,8 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const response = await api.auth.register(name, email, password);
       localStorage.setItem("smartspend_token", response.token);
+      // Clear onboarding flag for new users so they go through onboarding
+      localStorage.removeItem("smartspend_onboarding_complete");
       setUser(response.user);
       return response;
     } catch (err) {
@@ -63,6 +65,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("smartspend_token");
+    localStorage.removeItem("smartspend_onboarding_complete");
     setUser(null);
   };
 
@@ -72,6 +75,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser,
     loading,
     error,
     isAuthenticated: !!user,

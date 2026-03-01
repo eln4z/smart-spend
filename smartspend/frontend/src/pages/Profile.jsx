@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useData } from "../context/DataContext";
+import api from "../services/api";
 
 // Avatar options - stored in public/avatars folder
 const avatarOptions = [
@@ -15,34 +18,64 @@ const avatarOptions = [
 ];
 
 export default function Profile() {
-  // Load user from localStorage or use defaults
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("smartspend_user");
-    return saved ? JSON.parse(saved) : {
-      name: "Elnaz Mohammadi",
-      email: "elnaz.mohammadi@email.com",
-      dateOfBirth: "1999-05-15",
-      phone: "+44 7123 456789",
-      occupation: "Professional",
-      monthlyBudget: 1500,
-      currency: "GBP (£)",
-      avatar: null
-    };
+  const { user: authUser, setUser: setAuthUser } = useAuth();
+  const { transactions, loading } = useData();
+  
+  // Initialize user state from auth context
+  const [user, setUser] = useState({
+    name: authUser?.name || "",
+    email: authUser?.email || "",
+    dateOfBirth: authUser?.dateOfBirth || "",
+    phone: authUser?.phone || "",
+    occupation: authUser?.occupation || "",
+    monthlyBudget: authUser?.monthlyIncome || 0,
+    currency: authUser?.currency || "GBP (£)",
+    avatar: authUser?.avatar || null
   });
+
+  // Update local state when auth user changes
+  useEffect(() => {
+    if (authUser) {
+      setUser({
+        name: authUser.name || "",
+        email: authUser.email || "",
+        dateOfBirth: authUser.dateOfBirth || "",
+        phone: authUser.phone || "",
+        occupation: authUser.occupation || "",
+        monthlyBudget: authUser.monthlyIncome || 0,
+        currency: authUser.currency || "GBP (£)",
+        avatar: authUser.avatar || null
+      });
+    }
+  }, [authUser]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSelectingAvatar, setIsSelectingAvatar] = useState(false);
   const [editForm, setEditForm] = useState({ ...user });
+  const [saving, setSaving] = useState(false);
 
-  // Save to localStorage when user changes
-  useEffect(() => {
-    localStorage.setItem("smartspend_user", JSON.stringify(user));
-  }, [user]);
-
-  const handleSave = () => {
-    setUser({ ...editForm });
-    setIsEditing(false);
-    alert("Profile updated successfully!");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const response = await api.user.updateProfile({
+        name: editForm.name,
+        email: editForm.email,
+        dateOfBirth: editForm.dateOfBirth,
+        phone: editForm.phone,
+        occupation: editForm.occupation,
+        monthlyIncome: editForm.monthlyBudget,
+        currency: editForm.currency,
+        avatar: editForm.avatar
+      });
+      setUser({ ...editForm });
+      setAuthUser(response.user);
+      setIsEditing(false);
+      alert("Profile updated successfully!");
+    } catch (error) {
+      alert("Failed to update profile: " + error.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -50,12 +83,39 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const stats = {
-    totalTransactions: 156,
-    categoriesUsed: 8,
-    averageMonthlySpend: 1240,
-    memberSince: "September 2024"
+  const handleAvatarSelect = async (avatarId) => {
+    try {
+      const response = await api.user.updateProfile({ avatar: avatarId });
+      setUser({ ...user, avatar: avatarId });
+      setAuthUser(response.user);
+      setIsSelectingAvatar(false);
+    } catch (error) {
+      alert("Failed to update avatar: " + error.message);
+    }
   };
+
+  // Calculate real stats from data
+  const uniqueCategories = [...new Set(transactions.map(t => t.category))];
+  const totalSpent = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const avgMonthlySpend = transactions.length > 0 ? totalSpent / 3 : 0; // Approximate
+
+  const stats = {
+    totalTransactions: transactions.length,
+    categoriesUsed: uniqueCategories.length,
+    averageMonthlySpend: Math.round(avgMonthlySpend),
+    memberSince: authUser?.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently joined"
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>👤</div>
+          <p style={{ color: "#888" }}>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -89,12 +149,13 @@ export default function Profile() {
             >
               {user.avatar ? (
                 <img 
-                  src={`/avatars/${avatarOptions.find(a => a.id === user.avatar)?.file}`}
+                  src={`/avatars/${encodeURIComponent(avatarOptions.find(a => a.id === user.avatar)?.file || '')}`}
                   alt="Profile avatar"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
                 />
               ) : (
-                user.name.split(" ").map(n => n[0]).join("")
+                user.name?.split(" ").map(n => n[0]).join("") || "?"
               )}
               <div style={{
                 position: "absolute",
@@ -341,11 +402,12 @@ export default function Profile() {
                 className="btn" 
                 style={{ background: "#eee", color: "#555" }}
                 onClick={handleCancel}
+                disabled={saving}
               >
                 Cancel
               </button>
-              <button className="btn" onClick={handleSave}>
-                💾 Save Changes
+              <button className="btn" onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "💾 Save Changes"}
               </button>
             </div>
           </div>
@@ -404,10 +466,7 @@ export default function Profile() {
               {avatarOptions.map((avatar) => (
                 <div
                   key={avatar.id}
-                  onClick={() => {
-                    setUser({ ...user, avatar: avatar.id });
-                    setIsSelectingAvatar(false);
-                  }}
+                  onClick={() => handleAvatarSelect(avatar.id)}
                   style={{
                     cursor: "pointer",
                     border: user.avatar === avatar.id ? "3px solid #6c5ce7" : "3px solid transparent",
@@ -419,7 +478,7 @@ export default function Profile() {
                   }}
                 >
                   <img 
-                    src={`/avatars/${avatar.file}`}
+                    src={`/avatars/${encodeURIComponent(avatar.file)}`}
                     alt={avatar.name}
                     style={{ 
                       width: "100%", 
@@ -438,10 +497,7 @@ export default function Profile() {
             {/* Remove Avatar Option */}
             {user.avatar && (
               <button
-                onClick={() => {
-                  setUser({ ...user, avatar: null });
-                  setIsSelectingAvatar(false);
-                }}
+                onClick={() => handleAvatarSelect(null)}
                 style={{
                   marginTop: 20,
                   width: "100%",

@@ -2,16 +2,22 @@ import { useState, useRef } from "react";
 import { useData } from "../context/DataContext";
 
 export default function Settings() {
-  const { transactions, clearAllData, resetToDefault, importTransactions, exportToCSV, addTransaction, darkMode, setDarkMode } = useData();
+  const { transactions, categories: apiCategories, loading, clearAllData, resetToDefault, importTransactions, exportToCSV, addTransaction, darkMode, setDarkMode } = useData();
   const fileInputRef = useRef(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [importText, setImportText] = useState("");
+  
+  // Use API categories or fall back to defaults
+  const categories = apiCategories?.length > 0 
+    ? apiCategories.map(c => c.name) 
+    : ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
+
   const [newTransaction, setNewTransaction] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
     amount: "",
-    category: "Food"
+    category: categories[0] || "Food"
   });
 
   const [settings, setSettings] = useState({
@@ -26,8 +32,6 @@ export default function Settings() {
     lowBalanceAlerts: true,
     upcomingBillAlerts: true
   });
-
-  const categories = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
 
   const handleChange = (key, value) => {
     setSettings({ ...settings, [key]: value });
@@ -76,24 +80,40 @@ export default function Settings() {
     }
   };
 
-  const handleAddTransaction = () => {
+  const handleAddTransaction = async () => {
     if (newTransaction.description && newTransaction.amount) {
-      addTransaction({
+      // Find the category object to get its ID
+      const categoryObj = apiCategories?.find(c => c.name === newTransaction.category);
+      
+      await addTransaction({
         date: newTransaction.date,
         description: newTransaction.description,
         amount: parseFloat(newTransaction.amount),
-        category: newTransaction.category
+        category: newTransaction.category,
+        categoryId: categoryObj?._id,
+        type: 'expense'
       });
       alert("Transaction added!");
       setNewTransaction({
         date: new Date().toISOString().split("T")[0],
         description: "",
         amount: "",
-        category: "Food"
+        category: categories[0] || "Food"
       });
       setShowAddModal(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>⚙️</div>
+          <p style={{ color: "#888" }}>Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

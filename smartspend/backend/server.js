@@ -20,7 +20,15 @@ const tipsRoutes = require('./routes/tips');
 const app = express();
 
 // Middleware
-app.use(cors());
+// CORS configuration for production
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || [
+    'http://localhost:5173',
+    'http://localhost:5174',
+  ],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Connect to MongoDB

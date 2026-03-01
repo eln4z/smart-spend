@@ -10,10 +10,11 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import SmartTips from "./pages/SmartTips";
 import Login from "./pages/Login";
+import Onboarding from "./pages/Onboarding";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
     return (
@@ -38,12 +39,18 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Check if user needs onboarding (no monthly income set and not completed onboarding)
+  const needsOnboarding = user && !user.monthlyIncome && !localStorage.getItem("smartspend_onboarding_complete");
+  if (needsOnboarding && window.location.pathname !== "/onboarding") {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return children;
 };
 
 // App content with auth check
 const AppContent = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
     return (
@@ -64,11 +71,24 @@ const AppContent = () => {
     );
   }
 
+  // Check if new user needs onboarding
+  const needsOnboarding = isAuthenticated && user && !user.monthlyIncome && !localStorage.getItem("smartspend_onboarding_complete");
+
   return (
     <Routes>
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
+        element={isAuthenticated ? <Navigate to={needsOnboarding ? "/onboarding" : "/"} replace /> : <Login />}
+      />
+      <Route
+        path="/onboarding"
+        element={
+          isAuthenticated ? (
+            <Onboarding />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
       <Route
         path="/*"

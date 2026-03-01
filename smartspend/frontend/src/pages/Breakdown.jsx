@@ -5,7 +5,18 @@ import { useData } from "../context/DataContext";
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement);
 
 export default function Breakdown() {
-  const { transactions, getTotalSpent, getSpendingByCategory } = useData();
+  const { transactions, loading, getTotalSpent, getSpendingByCategory } = useData();
+  
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
+          <p style={{ color: "#888" }}>Loading your breakdown...</p>
+        </div>
+      </div>
+    );
+  }
   
   const totalSpent = getTotalSpent();
   const spendingByCategory = getSpendingByCategory();

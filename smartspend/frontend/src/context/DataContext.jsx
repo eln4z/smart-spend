@@ -1,33 +1,15 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import api from "../services/api";
 
 const DataContext = createContext();
 
-const defaultTransactions = [
-  { id: 1, date: "2026-02-10", description: "Tesco Superstore", amount: 87.50, category: "Food" },
-  { id: 2, date: "2026-02-09", description: "Uber Trip", amount: 12.50, category: "Transport" },
-  { id: 3, date: "2026-02-08", description: "Netflix", amount: 12.99, category: "Entertainment" },
-  { id: 4, date: "2026-02-07", description: "Amazon Prime", amount: 8.99, category: "Subscriptions" },
-  { id: 5, date: "2026-02-06", description: "Costa Coffee", amount: 4.50, category: "Food" },
-  { id: 6, date: "2026-02-05", description: "TfL Oyster", amount: 35.00, category: "Transport" },
-  { id: 7, date: "2026-02-04", description: "Deliveroo", amount: 18.99, category: "Food" },
-  { id: 8, date: "2026-02-03", description: "Spotify", amount: 10.99, category: "Entertainment" },
-  { id: 9, date: "2026-02-01", description: "Rent Payment", amount: 650.00, category: "Bills" },
-  { id: 10, date: "2026-02-02", description: "Electric Bill", amount: 45.00, category: "Bills" }
-];
-
-const defaultCategories = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
-
 export function DataProvider({ children }) {
-  const [transactions, setTransactions] = useState(() => {
-    const saved = localStorage.getItem("smartspend_transactions");
-    return saved ? JSON.parse(saved) : defaultTransactions;
-  });
-
-  // eslint-disable-next-line no-unused-vars
-  const [categories, setCategories] = useState(() => {
-    const saved = localStorage.getItem("smartspend_categories");
-    return saved ? JSON.parse(saved) : defaultCategories;
-  });
+  const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [budgets, setBudgets] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem("smartspend_settings");
@@ -44,6 +26,49 @@ export function DataProvider({ children }) {
     return saved ? JSON.parse(saved) : false;
   });
 
+  // Fetch all data from API
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [transactionsRes, categoriesRes, budgetsRes, subscriptionsRes] = await Promise.all([
+        api.transactions.getAll({ limit: 100 }),
+        api.categories.getAll(),
+        api.budgets.getAll(),
+        api.subscriptions.getAll(),
+      ]);
+
+      // Transform transactions to match frontend format
+      const formattedTransactions = transactionsRes.transactions.map(t => ({
+        id: t._id,
+        date: t.date.split("T")[0],
+        description: t.description,
+        amount: t.amount,
+        category: t.category?.name || "Other",
+        categoryId: t.category?._id,
+        type: t.type,
+        icon: t.category?.icon || "📁",
+        color: t.category?.color || "#6c5ce7",
+      }));
+
+      setTransactions(formattedTransactions);
+      setCategories(categoriesRes);
+      setBudgets(budgetsRes);
+      setSubscriptions(subscriptionsRes);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch data on mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   // Apply dark mode class to body
   useEffect(() => {
     localStorage.setItem("smartspend_darkmode", JSON.stringify(darkMode));
@@ -54,78 +79,79 @@ export function DataProvider({ children }) {
     }
   }, [darkMode]);
 
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
-  }, [transactions]);
-
-  useEffect(() => {
-    localStorage.setItem("smartspend_categories", JSON.stringify(categories));
-  }, [categories]);
-
   useEffect(() => {
     localStorage.setItem("smartspend_settings", JSON.stringify(settings));
   }, [settings]);
 
   // Add a transaction
-  const addTransaction = (transaction) => {
-    const newTransaction = {
-      ...transaction,
-      id: Date.now()
-    };
-    setTransactions([newTransaction, ...transactions]);
+  const addTransaction = async (transaction) => {
+    try {
+      const result = await api.transactions.create(transaction);
+      const newTx = {
+        id: result.transaction._id,
+        date: result.transaction.date.split("T")[0],
+        description: result.transaction.description,
+        amount: result.transaction.amount,
+        category: result.transaction.category?.name || "Other",
+        categoryId: result.transaction.category?._id,
+        type: result.transaction.type,
+        icon: result.transaction.category?.icon || "📁",
+        color: result.transaction.category?.color || "#6c5ce7",
+      };
+      setTransactions([newTx, ...transactions]);
+      return newTx;
+    } catch (err) {
+      console.error("Error adding transaction:", err);
+      throw err;
+    }
   };
 
   // Delete a transaction
-  const deleteTransaction = (id) => {
-    setTransactions(transactions.filter(t => t.id !== id));
+  const deleteTransaction = async (id) => {
+    try {
+      await api.transactions.delete(id);
+      setTransactions(transactions.filter(t => t.id !== id));
+    } catch (err) {
+      console.error("Error deleting transaction:", err);
+      throw err;
+    }
   };
 
   // Update a transaction
-  const updateTransaction = (id, updates) => {
-    setTransactions(transactions.map(t => t.id === id ? { ...t, ...updates } : t));
+  const updateTransaction = async (id, updates) => {
+    try {
+      const result = await api.transactions.update(id, updates);
+      setTransactions(transactions.map(t => 
+        t.id === id ? { 
+          ...t, 
+          ...updates,
+          category: result.transaction.category?.name || t.category 
+        } : t
+      ));
+    } catch (err) {
+      console.error("Error updating transaction:", err);
+      throw err;
+    }
   };
 
-  // Clear all data
+  // Refresh data
+  const refreshData = () => {
+    fetchData();
+  };
+
+  // Clear all data (logout)
   const clearAllData = () => {
     setTransactions([]);
-    localStorage.removeItem("smartspend_transactions");
-  };
-
-  // Reset to default data
-  const resetToDefault = () => {
-    setTransactions(defaultTransactions);
-  };
-
-  // Import transactions from CSV text
-  const importTransactions = (csvText) => {
-    const lines = csvText.trim().split("\n");
-    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
-    
-    const newTransactions = [];
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(",").map(v => v.trim());
-      if (values.length >= 3) {
-        const transaction = {
-          id: Date.now() + i,
-          date: values[headers.indexOf("date")] || new Date().toISOString().split("T")[0],
-          description: values[headers.indexOf("description")] || values[0],
-          amount: parseFloat(values[headers.indexOf("amount")]) || parseFloat(values[1]) || 0,
-          category: values[headers.indexOf("category")] || values[2] || "Other"
-        };
-        newTransactions.push(transaction);
-      }
-    }
-    
-    setTransactions([...newTransactions, ...transactions]);
-    return newTransactions.length;
+    setCategories([]);
+    setBudgets([]);
+    setSubscriptions([]);
   };
 
   // Export transactions to CSV
   const exportToCSV = () => {
-    const headers = "Date,Description,Amount,Category\n";
+    const headers = "Date,Description,Amount,Category,Type\n";
     const rows = transactions.map(t => 
-      `${t.date},"${t.description}",${t.amount},${t.category}`
+      `${t.date},"${t.description}",${t.amount},${t.category},${t.type}`
     ).join("\n");
     
     const csv = headers + rows;
@@ -138,21 +164,68 @@ export function DataProvider({ children }) {
     URL.revokeObjectURL(url);
   };
 
-  // Calculate totals
-  const getTotalSpent = () => transactions.reduce((sum, t) => sum + t.amount, 0);
+  // Calculate totals (expenses only)
+  const getTotalSpent = () => transactions
+    .filter(t => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
   
+  const getTotalIncome = () => transactions
+    .filter(t => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
   const getSpendingByCategory = () => {
     const byCategory = {};
-    transactions.forEach(t => {
-      byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
-    });
+    transactions
+      .filter(t => t.type === "expense")
+      .forEach(t => {
+        byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+      });
     return byCategory;
+  };
+
+  // Subscription management
+  const addSubscription = async (subscription) => {
+    try {
+      const result = await api.subscriptions.create(subscription);
+      setSubscriptions([result, ...subscriptions]);
+      return result;
+    } catch (err) {
+      console.error("Error adding subscription:", err);
+      throw err;
+    }
+  };
+
+  const updateSubscription = async (id, updates) => {
+    try {
+      const result = await api.subscriptions.update(id, updates);
+      setSubscriptions(subscriptions.map(s => 
+        (s._id === id || s.id === id) ? { ...s, ...result } : s
+      ));
+      return result;
+    } catch (err) {
+      console.error("Error updating subscription:", err);
+      throw err;
+    }
+  };
+
+  const deleteSubscription = async (id) => {
+    try {
+      await api.subscriptions.delete(id);
+      setSubscriptions(subscriptions.filter(s => s._id !== id && s.id !== id));
+    } catch (err) {
+      console.error("Error deleting subscription:", err);
+      throw err;
+    }
   };
 
   return (
     <DataContext.Provider value={{
       transactions,
       categories,
+      budgets,
+      subscriptions,
+      loading,
+      error,
       settings,
       setSettings,
       darkMode,
@@ -160,11 +233,14 @@ export function DataProvider({ children }) {
       addTransaction,
       deleteTransaction,
       updateTransaction,
+      addSubscription,
+      updateSubscription,
+      deleteSubscription,
+      refreshData,
       clearAllData,
-      resetToDefault,
-      importTransactions,
       exportToCSV,
       getTotalSpent,
+      getTotalIncome,
       getSpendingByCategory
     }}>
       {children}

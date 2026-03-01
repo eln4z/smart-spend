@@ -2,12 +2,17 @@ import { useState, useEffect } from "react";
 import { useData } from "../context/DataContext";
 
 export default function Categories() {
-  const { transactions: globalTransactions, updateTransaction } = useData();
+  const { transactions: globalTransactions, categories: apiCategories, loading, updateTransaction } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   
   // Create local state with editedCategory field
   const [localTransactions, setLocalTransactions] = useState([]);
+
+  // Use API categories or fall back to defaults
+  const categories = apiCategories.length > 0 
+    ? apiCategories.map(c => c.name) 
+    : ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
 
   // Sync local state with global transactions
   useEffect(() => {
@@ -20,7 +25,16 @@ export default function Categories() {
     );
   }, [globalTransactions]);
 
-  const categories = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>📝</div>
+          <p style={{ color: "#888" }}>Loading categories...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleCategoryChange = (id, newCategory) => {
     setLocalTransactions(localTransactions.map(t => 

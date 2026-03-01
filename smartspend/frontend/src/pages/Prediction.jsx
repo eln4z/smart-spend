@@ -1,62 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AlertsPanel from "../components/AlertsPanel";
-
-// Default subscriptions list
-const defaultSubscriptions = [
-  { id: 1, name: "Netflix", amount: 12.99, billingDay: 1, active: true },
-  { id: 2, name: "Spotify", amount: 10.99, billingDay: 15, active: true },
-  { id: 3, name: "Amazon Prime", amount: 8.99, billingDay: 5, active: true },
-  { id: 4, name: "Disney+", amount: 7.99, billingDay: 10, active: false },
-  { id: 5, name: "Gym Membership", amount: 29.99, billingDay: 1, active: true },
-];
+import { useAuth } from "../context/AuthContext";
+import { useData } from "../context/DataContext";
 
 export default function Prediction() {
-  // Load starting balance from user profile (monthly budget)
-  const [startingBalance, setStartingBalance] = useState(() => {
-    const savedUser = localStorage.getItem("smartspend_user");
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      return user.monthlyBudget || 1500;
-    }
-    return 1500;
-  });
+  const { user } = useAuth();
+  const { subscriptions: apiSubscriptions, loading, addSubscription, updateSubscription, deleteSubscription } = useData();
+  
+  // Use user's monthly income as default, but allow local override
+  const [startingBalance, setStartingBalance] = useState(null);
+  const effectiveBalance = startingBalance !== null ? startingBalance : (user?.monthlyIncome || 1500);
   const [weeklySpend, setWeeklySpend] = useState(300);
   
-  // Load subscriptions from localStorage or use defaults
-  const [subscriptions, setSubscriptions] = useState(() => {
-    const saved = localStorage.getItem("smartspend_subscriptions");
-    return saved ? JSON.parse(saved) : defaultSubscriptions;
-  });
+  // Use subscriptions from API, or empty array while loading
+  const subscriptions = apiSubscriptions || [];
   
   // New subscription form
   const [newSub, setNewSub] = useState({ name: "", amount: "", billingDay: 1 });
   const [showAddForm, setShowAddForm] = useState(false);
-
-  // Save subscriptions to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem("smartspend_subscriptions", JSON.stringify(subscriptions));
-  }, [subscriptions]);
-
-  // Listen for changes to user profile in localStorage
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const savedUser = localStorage.getItem("smartspend_user");
-      if (savedUser) {
-        const user = JSON.parse(savedUser);
-        if (user.monthlyBudget) {
-          setStartingBalance(user.monthlyBudget);
-        }
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("focus", handleStorageChange);
-    
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("focus", handleStorageChange);
-    };
-  }, []);
 
   // Calculate total monthly subscriptions
   const activeSubscriptions = subscriptions.filter(s => s.active);
@@ -73,7 +34,7 @@ export default function Prediction() {
   const paidTotal = paidThisMonth.reduce((sum, s) => sum + s.amount, 0);
 
   const weeksLeft = Math.ceil((daysInMonth - currentDay) / 7);
-  const projectedBalance = startingBalance - (weeklySpend * weeksLeft) - upcomingTotal;
+  const projectedBalance = effectiveBalance - (weeklySpend * weeksLeft) - upcomingTotal;
 
   // Generate alerts based on subscriptions
   const generateAlerts = () => {
@@ -101,11 +62,11 @@ export default function Prediction() {
     }
     
     // High subscription cost warning
-    if (totalSubscriptions > startingBalance * 0.15) {
+    if (totalSubscriptions > effectiveBalance * 0.15) {
       alerts.push({
         type: "warning",
         title: "High Subscription Costs",
-        message: `Your subscriptions total £${totalSubscriptions.toFixed(2)}/month (${((totalSubscriptions / startingBalance) * 100).toFixed(0)}% of budget). Review if all are needed.`
+        message: `Your subscriptions total £${totalSubscriptions.toFixed(2)}/month (${((totalSubscriptions / effectiveBalance) * 100).toFixed(0)}% of budget). Review if all are needed.`
       });
     }
     
@@ -129,34 +90,42 @@ export default function Prediction() {
   };
 
   // Add new subscription
-  const handleAddSubscription = () => {
+  const handleAddSubscription = async () => {
     if (newSub.name && newSub.amount) {
-      setSubscriptions([
-        ...subscriptions,
-        {
-          id: Date.now(),
-          name: newSub.name,
-          amount: parseFloat(newSub.amount),
-          billingDay: parseInt(newSub.billingDay),
-          active: true
-        }
-      ]);
+      await addSubscription({
+        name: newSub.name,
+        amount: parseFloat(newSub.amount),
+        billingDay: parseInt(newSub.billingDay),
+        active: true
+      });
       setNewSub({ name: "", amount: "", billingDay: 1 });
       setShowAddForm(false);
     }
   };
 
   // Toggle subscription active state
-  const toggleSubscription = (id) => {
-    setSubscriptions(subscriptions.map(s => 
-      s.id === id ? { ...s, active: !s.active } : s
-    ));
+  const toggleSubscription = async (id) => {
+    const sub = subscriptions.find(s => s._id === id || s.id === id);
+    if (sub) {
+      await updateSubscription(sub._id || sub.id, { active: !sub.active });
+    }
   };
 
-  // Delete subscription
-  const deleteSubscription = (id) => {
-    setSubscriptions(subscriptions.filter(s => s.id !== id));
+  // Delete subscription handler (renamed to avoid conflict with imported function)
+  const handleDeleteSubscription = async (id) => {
+    await deleteSubscription(id);
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔮</div>
+          <p style={{ color: "#888" }}>Loading predictions...</p>
+        </div>
+      </div>
+    );
+  }
 
   const alerts = generateAlerts();
 
@@ -300,7 +269,7 @@ export default function Prediction() {
               >
                 {/* Toggle */}
                 <button
-                  onClick={() => toggleSubscription(sub.id)}
+                  onClick={() => toggleSubscription(sub._id || sub.id)}
                   style={{
                     width: 24,
                     height: 24,
@@ -359,7 +328,7 @@ export default function Prediction() {
                 
                 {/* Delete */}
                 <button
-                  onClick={() => deleteSubscription(sub.id)}
+                  onClick={() => handleDeleteSubscription(sub._id || sub.id)}
                   style={{
                     background: "none",
                     border: "none",
@@ -408,7 +377,7 @@ export default function Prediction() {
             <label style={{ display: "block", marginBottom: 8, fontWeight: 500, color: "#555" }}>Starting Balance (£)</label>
             <input 
               type="number" 
-              value={startingBalance} 
+              value={effectiveBalance} 
               onChange={(e) => setStartingBalance(Number(e.target.value))}
             />
           </div>

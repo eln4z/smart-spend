@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
@@ -49,8 +51,11 @@ const Login = () => {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
+        navigate("/");
       } else {
         await register(formData.name, formData.email, formData.password);
+        // New users go to onboarding
+        navigate("/onboarding");
       }
     } catch (err) {
       setFormError(err.message);
@@ -89,14 +94,16 @@ const Login = () => {
       >
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 30 }}>
-          <div
+          <img
+            src="/logo.png"
+            alt="SmartSpend Logo"
             style={{
-              fontSize: 48,
+              width: 150,
+              height: 150,
+              objectFit: "contain",
               marginBottom: 10,
             }}
-          >
-            💰
-          </div>
+          />
           <h1
             style={{
               fontSize: 28,
