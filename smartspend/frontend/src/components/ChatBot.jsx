@@ -120,7 +120,10 @@ export default function ChatBot() {
     };
   };
 
-  // Context-aware AI response
+  // Keyword-matching response engine.
+  // The user's question is lower-cased and matched against topic groups.
+  // Each branch pulls live financial data so answers are personalised
+  // to the user's actual transactions rather than generic.
   const getAIResponse = (question) => {
     const q = question.toLowerCase();
     const data = getFinancialData();

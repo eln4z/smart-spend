@@ -27,16 +27,18 @@ function FinancialHealthScore({ transactions, settings }) {
     const dayOfMonth = now.getDate();
     
     // 1. Budget Adherence Score (0-40 points)
-    // How well are they staying within budget?
+    // Compares actual spend ratio (spent/budget) against the expected ratio
+    // (day of month / days in month). If the user is spending proportionally
+    // faster than the month is progressing, they lose points.
     const budgetRatio = totalSpent / budget;
     const expectedRatio = dayOfMonth / daysInMonth;
     let budgetScore = 40;
     
     if (budgetRatio > 1) {
-      // Over budget
+      // Over budget — lose points proportionally to the overshoot
       budgetScore = Math.max(0, 40 - ((budgetRatio - 1) * 100));
     } else if (budgetRatio > expectedRatio * 1.2) {
-      // Spending faster than expected
+      // Spending 20%+ faster than the month is progressing
       budgetScore = Math.max(10, 40 - ((budgetRatio - expectedRatio) * 60));
     }
     

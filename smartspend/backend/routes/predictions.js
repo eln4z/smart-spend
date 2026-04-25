@@ -89,13 +89,18 @@ router.get('/monthly', auth, async (req, res) => {
       .filter((sub) => sub.billingDay > currentDay)
       .reduce((acc, sub) => acc + sub.amount, 0);
 
-    // Calculate predictions
+    // Calculate three independent predictions and blend them:
+    // 1. Trend-based: extrapolate the user's daily average for the rest of the month
     const trendBasedPrediction = spentSoFar + dailyAverage * daysRemaining;
+    // 2. Historical: use the average total from the last 3 months as a baseline
     const historicalPrediction = avgLastMonths;
+    // 3. Subscription-adjusted: trend + any subscriptions not yet charged this month
     const subscriptionAdjustedPrediction =
       spentSoFar + dailyAverage * daysRemaining + upcomingSubscriptionCost;
 
-    // Weighted prediction (60% trend, 30% historical, 10% subscriptions adjustment)
+    // Blend the three signals: current trend carries the most weight (60%),
+    // historical average provides context (30%), and the subscription
+    // adjustment adds a small correction for known upcoming charges (10%).
     const prediction =
       trendBasedPrediction * 0.6 +
       historicalPrediction * 0.3 +
