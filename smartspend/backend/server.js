@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -20,13 +21,8 @@ const tipsRoutes = require('./routes/tips');
 const app = express();
 
 // Middleware
-// CORS — allow local dev origins only
-app.use(
-  cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
-    credentials: true,
-  })
-);
+// Allow all origins (needed for Goldsmiths VM proxy and local dev)
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Connect to MongoDB
@@ -50,6 +46,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'SmartSpend API is running' });
 });
 
+// Serve built React frontend (production)
+const frontendDist = path.join(__dirname, '../frontend/dist');
+app.use(express.static(frontendDist));
+
+// React Router — send all non-API requests to index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDist, 'index.html'));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -57,11 +62,6 @@ app.use((err, req, res, next) => {
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined,
   });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
 });
 
 // Start server
