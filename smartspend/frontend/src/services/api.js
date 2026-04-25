@@ -1,5 +1,6 @@
-// API Configuration — local development only
-const API_BASE_URL = 'http://localhost:5001/api';
+// API Configuration — uses env var for production (VM), falls back to local dev
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 // Helper to get auth token
 const getToken = () => localStorage.getItem('smartspend_token');
