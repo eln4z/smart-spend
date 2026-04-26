@@ -1,6 +1,7 @@
 # SmartSpend — Backend API
 
-> **Final Year Computing Project** · Goldsmiths, University of London · 2025/26
+> **Final Year Computing Project**
+> Goldsmiths, University of London · 2025/26
 
 **🌐 Live site:** [https://smartspend.chat](https://smartspend.chat)  
 **🔗 Live API:** [https://smartspend-vt5x.onrender.com/api](https://smartspend-vt5x.onrender.com/api)  
