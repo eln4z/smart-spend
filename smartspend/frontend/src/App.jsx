@@ -2,6 +2,16 @@ import { Component } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { DataProvider } from "./context/DataContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Breakdown from "./pages/Breakdown";
+import Prediction from "./pages/Prediction";
+import Categories from "./pages/Categories";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import SmartTips from "./pages/SmartTips";
+import Login from "./pages/Login";
+import Onboarding from "./pages/Onboarding";
 
 // Error Boundary — catches any render crash and shows a message instead of blank page
 class ErrorBoundary extends Component {
@@ -11,6 +21,9 @@ class ErrorBoundary extends Component {
   }
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error("ErrorBoundary caught:", error, info);
   }
   render() {
     if (this.state.hasError) {
@@ -37,16 +50,6 @@ class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
-import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-import Breakdown from "./pages/Breakdown";
-import Prediction from "./pages/Prediction";
-import Categories from "./pages/Categories";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
-import SmartTips from "./pages/SmartTips";
-import Login from "./pages/Login";
-import Onboarding from "./pages/Onboarding";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -54,15 +57,11 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
-        }}
-      >
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+      }}>
         <div style={{ textAlign: "center", color: "white" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>💰</div>
           <div style={{ fontSize: 18 }}>Loading SmartSpend...</div>
@@ -75,7 +74,6 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Check if user needs onboarding (no monthly income set and not completed onboarding)
   const needsOnboarding = user && !user.monthlyIncome && !localStorage.getItem("smartspend_onboarding_complete");
   if (needsOnboarding && window.location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
@@ -90,15 +88,11 @@ const AppContent = () => {
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
-        }}
-      >
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+      }}>
         <div style={{ textAlign: "center", color: "white" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>💰</div>
           <div style={{ fontSize: 18 }}>Loading SmartSpend...</div>
@@ -107,7 +101,6 @@ const AppContent = () => {
     );
   }
 
-  // Check if new user needs onboarding
   const needsOnboarding = isAuthenticated && user && !user.monthlyIncome && !localStorage.getItem("smartspend_onboarding_complete");
 
   return (
@@ -118,13 +111,7 @@ const AppContent = () => {
       />
       <Route
         path="/onboarding"
-        element={
-          isAuthenticated ? (
-            <Onboarding />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
+        element={isAuthenticated ? <Onboarding /> : <Navigate to="/login" replace />}
       />
       <Route
         path="/*"
