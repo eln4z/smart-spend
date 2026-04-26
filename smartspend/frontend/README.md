@@ -1,62 +1,97 @@
-# SmartSpend
+# SmartSpend — Frontend
 
-**🌐 Live site: [https://smartspend.chat](https://smartspend.chat)**
+> **Final Year Computing Project** · Goldsmiths, University of London · 2025/26
 
-A simple web-based budgeting and spending insight application for students and young adults.
+**🌐 Live site:** [https://smartspend.chat](https://smartspend.chat)
+
+A web-based personal finance tracker designed for students and young adults. SmartSpend helps users monitor spending, manage budgets, track subscriptions, and get AI-powered insights — all in one place.
+
+---
 
 ## Features
 
-- **Dashboard** – View total spent, current balance, projected end balance, alerts, and spending charts
-- **Breakdown** – See spending by category with pie charts, tables, and weekly trends
-- **Prediction** – Estimate your end-of-month balance and view spending alerts
-- **Categories** – Review and edit automatically categorised transactions
-- **Profile** – Manage your personal details, budget settings, and choose a fun avatar
-- **Settings** – Toggle dark mode, export/import data, and manage app preferences
+- **Dashboard** — Financial health score, spending overview, AI pattern detection, and monthly insights
+- **Breakdown** — Spending by category with pie charts, bar charts, and weekly trends
+- **Prediction** — Projected end-of-month balance based on subscriptions and weekly spend
+- **Categories** — Review and reassign automatically categorised transactions
+- **Smart Tips** — Financial education articles tailored to your spending habits
+- **Profile** — Set your monthly budget, income, and personalise your avatar
+- **Settings** — Dark mode, import/export data, quick-add transactions
 
-## How to Run
-
-1. Make sure you have **Node.js** installed (version 16 or higher recommended)
-   - Download from: https://nodejs.org/
-
-2. Open a terminal and navigate to the frontend folder:
-
-   ```bash
-   cd smartspend/frontend
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-4. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-5. Open your browser and go to the localhost address shown in the terminal.
-
-   **Note:** The default port is `5173`, but if that port is in use, Vite will automatically try the next available port (5174, 5175, etc.). Check the terminal output for the exact URL:
-
-   ```
-   ➜  Local:   http://localhost:5190/
-   ```
-
-   Example addresses:
-   - http://localhost:5173/
-   - http://localhost:5174/
-   - http://localhost:5175/
-   - etc.
+---
 
 ## Tech Stack
 
-- React
-- Vite
-- React Router
-- Chart.js
+| Layer        | Technology                 |
+| ------------ | -------------------------- |
+| UI Framework | React 19                   |
+| Build Tool   | Vite                       |
+| Routing      | React Router v7            |
+| Charts       | Chart.js + react-chartjs-2 |
+| Deployment   | Vercel                     |
+
+---
+
+## Running Locally
+
+### Prerequisites
+
+- [Node.js 16+](https://nodejs.org/) installed
+- The backend server running (see `backend/README.md`)
+
+### Step 1 — Install dependencies
+
+```bash
+cd smartspend/frontend
+npm install
+```
+
+### Step 2 — Configure environment variables
+
+Create a `.env` file in the `frontend/` folder:
+
+```env
+VITE_API_URL=http://localhost:5001/api
+```
+
+> If you want to use the live deployed API instead, set:
+>
+> ```env
+> VITE_API_URL=https://smartspend-vt5x.onrender.com/api
+> ```
+
+### Step 3 — Start the development server
+
+```bash
+npm run dev
+```
+
+Open the URL shown in the terminal (usually `http://localhost:5173`).
+
+### Demo account
+
+If using the live API or after seeding local data:
+
+| Field    | Value               |
+| -------- | ------------------- |
+| Email    | demo@smartspend.com |
+| Password | demo123             |
+
+---
+
+## Project Structure
+
+```
+frontend/src/
+├── pages/         # Route-level page components
+├── components/    # Reusable UI components
+├── context/       # Global state (Auth, Data)
+├── services/      # API communication layer
+└── assets/        # Images and static files
+```
+
+---
 
 ## Author
 
-Elnaz Mohammadi – Student Reference: 33829729
+Elnaz Mohammadi — Student Reference: 33829729

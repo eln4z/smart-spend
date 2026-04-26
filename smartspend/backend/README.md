@@ -1,66 +1,92 @@
-# SmartSpend Backend API
+# SmartSpend — Backend API
 
-**🌐 Live site: [https://smartspend.chat](https://smartspend.chat)**
-**🔗 API base URL: [https://smartspend-vt5x.onrender.com/api](https://smartspend-vt5x.onrender.com/api)**
+> **Final Year Computing Project** · Goldsmiths, University of London · 2025/26
 
-A Node.js + Express + MongoDB backend for the SmartSpend personal finance tracker.
+**🌐 Live site:** [https://smartspend.chat](https://smartspend.chat)  
+**🔗 Live API:** [https://smartspend-vt5x.onrender.com/api](https://smartspend-vt5x.onrender.com/api)  
+**🏥 Health check:** [https://smartspend-vt5x.onrender.com/api/health](https://smartspend-vt5x.onrender.com/api/health)
+
+A RESTful Node.js + Express + MongoDB backend for the SmartSpend personal finance tracker.
+
+---
 
 ## Features
 
-- 🔐 **Authentication** - JWT-based user registration and login
-- 💰 **Transactions** - Full CRUD for income/expense tracking
-- 📂 **Categories** - Custom spending categories with icons and colors
-- 📊 **Budgets** - Set and track category budgets with alerts
-- 🔄 **Subscriptions** - Track recurring payments
-- 📈 **Predictions** - AI-powered spending forecasts
-- 💡 **Smart Tips** - Personalized savings recommendations
+- 🔐 **Authentication** — JWT-based registration and login with secure password hashing
+- 💰 **Transactions** — Full CRUD for income and expense tracking
+- 📂 **Categories** — Custom spending categories with icons and colours
+- 📊 **Budgets** — Set and monitor category budgets with overspend alerts
+- 🔄 **Subscriptions** — Track recurring monthly payments
+- 📈 **Predictions** — Spending forecasts and trend analysis
+- 💡 **Smart Tips** — Personalised financial advice based on spending data
+
+---
 
 ## Tech Stack
 
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Database:** MongoDB with Mongoose ODM
-- **Authentication:** JWT (JSON Web Tokens)
-- **Validation:** express-validator
-- **Security:** bcryptjs for password hashing
+| Layer      | Technology                    |
+| ---------- | ----------------------------- |
+| Runtime    | Node.js 18+                   |
+| Framework  | Express.js                    |
+| Database   | MongoDB (Atlas in production) |
+| ODM        | Mongoose                      |
+| Auth       | JWT (JSON Web Tokens)         |
+| Validation | express-validator             |
+| Security   | bcryptjs (password hashing)   |
+| Deployment | Render                        |
 
-## Getting Started
+---
+
+## Running Locally
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- MongoDB running locally or a MongoDB Atlas account
+- [Node.js 18+](https://nodejs.org/) installed
+- A [MongoDB Atlas](https://www.mongodb.com/atlas) free account **or** MongoDB installed locally
 
-### Installation
+### Step 1 — Install dependencies
 
-1. Install dependencies:
+```bash
+cd smartspend/backend
+npm install
+```
 
-   ```bash
-   cd backend
-   npm install
-   ```
+### Step 2 — Configure environment variables
 
-2. Configure environment variables:
+Create a `.env` file in the `backend/` folder:
 
-   ```bash
-   cp .env.example .env
-   # Edit .env with your MongoDB URI and JWT secret
-   ```
+```env
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/smartspend
+JWT_SECRET=your_secret_key_here
+PORT=5001
+NODE_ENV=development
+```
 
-3. Start the server:
+> **Using MongoDB Atlas?** Create a free M0 cluster, add a database user, allow network access from `0.0.0.0/0`, and paste the connection string above.  
+> **Using local MongoDB?** Set `MONGODB_URI=mongodb://localhost:27017/smartspend`
 
-   ```bash
-   # Development (with auto-reload)
-   npm run dev
+### Step 3 — Start the server
 
-   # Production
-   npm start
-   ```
+```bash
+node server.js
+```
 
-4. (Optional) Seed demo data:
-   ```bash
-   npm run seed
-   ```
+The API will be available at `http://localhost:5001/api`.
+
+### Step 4 — (Optional) Seed demo data
+
+```bash
+node seeds/seedData.js
+```
+
+This creates a demo account you can log in with:
+
+| Field    | Value               |
+| -------- | ------------------- |
+| Email    | demo@smartspend.com |
+| Password | demo123             |
+
+---
 
 ## API Endpoints
 
@@ -140,20 +166,13 @@ A Node.js + Express + MongoDB backend for the SmartSpend personal finance tracke
 | GET    | `/api/tips`              | Get personalized tips   |
 | GET    | `/api/tips/savings-goal` | Get savings goal advice |
 
-## Demo Account
-
-After running the seed script:
-
-- **Email:** demo@smartspend.com
-- **Password:** demo123
-
 ## Environment Variables
 
 | Variable      | Description               | Default                                |
 | ------------- | ------------------------- | -------------------------------------- |
 | `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/smartspend` |
 | `JWT_SECRET`  | Secret for JWT signing    | -                                      |
-| `PORT`        | Server port               | `5000`                                 |
+| `PORT`        | Server port               | `5001`                                 |
 | `NODE_ENV`    | Environment               | `development`                          |
 
 ## Project Structure
@@ -184,6 +203,9 @@ backend/
 └── .env
 ```
 
-## License
+---
 
-ISC
+## Author
+
+Elnaz Mohammadi — Student Reference: 33829729  
+Goldsmiths, University of London · 2025/26
