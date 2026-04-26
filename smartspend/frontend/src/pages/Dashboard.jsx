@@ -1407,10 +1407,12 @@ export default function Dashboard() {
     type: "expense"
   });
 
-  // Get expense categories from API data
-  const categoryOptions = categories
-    .filter(c => c.type === "expense" || c.type === "both")
-    .map(c => ({ id: c._id, name: c.name, icon: c.icon }));
+  // Get expense categories from API data (guard against non-array)
+  const categoryOptions = Array.isArray(categories)
+    ? categories
+        .filter(c => c.type === "expense" || c.type === "both")
+        .map(c => ({ id: c._id, name: c.name, icon: c.icon || "📁" }))
+    : [];
   
   const totalSpent = getTotalSpent();
   const _totalIncome = getTotalIncome ? getTotalIncome() : 0;

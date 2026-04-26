@@ -1,6 +1,42 @@
+import { Component } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { DataProvider } from "./context/DataContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+
+// Error Boundary — catches any render crash and shows a message instead of blank page
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: "100vh", display: "flex", alignItems: "center",
+          justifyContent: "center", flexDirection: "column", gap: 16,
+          background: "#f8f9fa", textAlign: "center", padding: 32
+        }}>
+          <div style={{ fontSize: 48 }}>⚠️</div>
+          <h2 style={{ color: "#e74c3c" }}>Something went wrong</h2>
+          <p style={{ color: "#666", maxWidth: 400 }}>
+            {this.state.error?.message || "An unexpected error occurred."}
+          </p>
+          <button
+            onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
+            style={{ padding: "10px 24px", background: "#6c5ce7", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 15 }}
+          >
+            Reload page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Breakdown from "./pages/Breakdown";
@@ -96,15 +132,17 @@ const AppContent = () => {
           <ProtectedRoute>
             <DataProvider>
               <Layout>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/breakdown" element={<Breakdown />} />
-                  <Route path="/prediction" element={<Prediction />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/smarttips" element={<SmartTips />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Routes>
+                <ErrorBoundary>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/breakdown" element={<Breakdown />} />
+                    <Route path="/prediction" element={<Prediction />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/smarttips" element={<SmartTips />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Routes>
+                </ErrorBoundary>
               </Layout>
             </DataProvider>
           </ProtectedRoute>
@@ -116,8 +154,10 @@ const AppContent = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
