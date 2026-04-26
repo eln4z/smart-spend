@@ -1463,28 +1463,29 @@ export default function Dashboard() {
   };
 
   const handleAddExpense = async () => {
-    if (newExpense.description && newExpense.amount) {
-      const categoryObj = categories.find(c => c.name === newExpense.category);
-      try {
-        await addTransaction({
-          date: newExpense.date,
-          description: newExpense.description,
-          amount: parseFloat(newExpense.amount),
-          category: categoryObj?._id,
-          type: 'expense'
-        });
-        setNewExpense({
-          date: new Date().toISOString().split("T")[0],
-          description: "",
-          amount: "",
-          category: "",
-          categoryId: "",
-          type: "expense"
-        });
-        setShowAddModal(false);
-      } catch (err) {
-        alert("Failed to add expense: " + err.message);
-      }
+    const categoryId = newExpense.category || categoryOptions[0]?.id;
+    if (!newExpense.description || !newExpense.amount || !categoryId) {
+      alert("Please fill in all fields.");
+      return;
+    }
+    try {
+      await addTransaction({
+        date: newExpense.date,
+        description: newExpense.description,
+        amount: parseFloat(newExpense.amount),
+        category: categoryId,
+        type: 'expense'
+      });
+      setNewExpense({
+        date: new Date().toISOString().split("T")[0],
+        description: "",
+        amount: "",
+        category: "",
+        type: "expense"
+      });
+      setShowAddModal(false);
+    } catch (err) {
+      alert("Failed to add expense: " + err.message);
     }
   };
 
@@ -1549,7 +1550,10 @@ export default function Dashboard() {
             <h3>💸 Recent Expenses</h3>
             <button 
               className="btn"
-              onClick={() => setShowAddModal(true)}
+              onClick={() => {
+                setShowAddModal(true);
+                setNewExpense(prev => ({ ...prev, category: categoryOptions[0]?.id || "" }));
+              }}
               style={{ padding: "8px 16px", fontSize: 14 }}
             >
               ➕ Add Expense
@@ -1669,7 +1673,7 @@ export default function Dashboard() {
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Category</label>
               <select
-                value={newExpense.category}
+                value={newExpense.category || categoryOptions[0]?.id || ""}
                 onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
                 style={{
                   width: "100%",
@@ -1679,7 +1683,7 @@ export default function Dashboard() {
                 }}
               >
                 {categoryOptions.map(cat => (
-                  <option key={cat.id} value={cat.name}>{cat.icon} {cat.name}</option>
+                  <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
                 ))}
               </select>
             </div>

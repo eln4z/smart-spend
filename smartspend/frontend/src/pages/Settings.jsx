@@ -8,16 +8,16 @@ export default function Settings() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [importText, setImportText] = useState("");
   
-  // Use API categories or fall back to defaults
-  const categories = apiCategories?.length > 0 
-    ? apiCategories.map(c => c.name) 
-    : ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Subscriptions", "Other"];
+  // Use API categories mapped to {id, name, icon}
+  const categoryOptions = apiCategories?.length > 0
+    ? apiCategories.map(c => ({ id: c._id, name: c.name, icon: c.icon || "" }))
+    : [];
 
   const [newTransaction, setNewTransaction] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
     amount: "",
-    category: categories[0] || "Food",
+    category: "",
     type: "expense",
   });
 
@@ -83,13 +83,17 @@ export default function Settings() {
 
   const handleAddTransaction = async () => {
     if (!newTransaction.description || !newTransaction.amount) return;
+    const categoryId = newTransaction.category || categoryOptions[0]?.id;
+    if (!categoryId) {
+      alert("Please wait for categories to load, then try again.");
+      return;
+    }
     try {
-      const categoryObj = apiCategories?.find(c => c.name === newTransaction.category);
       await addTransaction({
         date: newTransaction.date,
         description: newTransaction.description,
         amount: parseFloat(newTransaction.amount),
-        category: categoryObj?._id,
+        category: categoryId,
         type: newTransaction.type || 'expense',
       });
       alert("Transaction added!");
@@ -97,7 +101,7 @@ export default function Settings() {
         date: new Date().toISOString().split("T")[0],
         description: "",
         amount: "",
-        category: categories[0] || "Food",
+        category: "",
         type: "expense",
       });
       setShowAddModal(false);
@@ -424,7 +428,7 @@ export default function Settings() {
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Category</label>
               <select
-                value={newTransaction.category}
+                value={newTransaction.category || categoryOptions[0]?.id || ""}
                 onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
                 style={{
                   width: "100%",
@@ -433,8 +437,8 @@ export default function Settings() {
                   borderRadius: 8
                 }}
               >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {categoryOptions.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
                 ))}
               </select>
             </div>
