@@ -92,14 +92,19 @@ export default function Prediction() {
   // Add new subscription
   const handleAddSubscription = async () => {
     if (newSub.name && newSub.amount) {
-      await addSubscription({
-        name: newSub.name,
-        amount: parseFloat(newSub.amount),
-        billingDay: parseInt(newSub.billingDay),
-        active: true
-      });
-      setNewSub({ name: "", amount: "", billingDay: 1 });
-      setShowAddForm(false);
+      try {
+        await addSubscription({
+          name: newSub.name,
+          amount: parseFloat(newSub.amount),
+          billingDay: parseInt(newSub.billingDay),
+          frequency: 'monthly',
+          active: true
+        });
+        setNewSub({ name: "", amount: "", billingDay: 1 });
+        setShowAddForm(false);
+      } catch (err) {
+        alert("Failed to add subscription: " + err.message);
+      }
     }
   };
 

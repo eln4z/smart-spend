@@ -1464,24 +1464,27 @@ export default function Dashboard() {
 
   const handleAddExpense = async () => {
     if (newExpense.description && newExpense.amount) {
-      // Find the category object to get its ID
       const categoryObj = categories.find(c => c.name === newExpense.category);
-      
-      await addTransaction({
-        date: newExpense.date,
-        description: newExpense.description,
-        amount: parseFloat(newExpense.amount),
-        category: newExpense.category,
-        categoryId: categoryObj?._id,
-        type: 'expense'
-      });
-      setNewExpense({
-        date: new Date().toISOString().split("T")[0],
-        description: "",
-        amount: "",
-        category: categoryOptions[0] || "Food"
-      });
-      setShowAddModal(false);
+      try {
+        await addTransaction({
+          date: newExpense.date,
+          description: newExpense.description,
+          amount: parseFloat(newExpense.amount),
+          category: categoryObj?._id,
+          type: 'expense'
+        });
+        setNewExpense({
+          date: new Date().toISOString().split("T")[0],
+          description: "",
+          amount: "",
+          category: "",
+          categoryId: "",
+          type: "expense"
+        });
+        setShowAddModal(false);
+      } catch (err) {
+        alert("Failed to add expense: " + err.message);
+      }
     }
   };
 
@@ -1676,7 +1679,7 @@ export default function Dashboard() {
                 }}
               >
                 {categoryOptions.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat.id} value={cat.name}>{cat.icon} {cat.name}</option>
                 ))}
               </select>
             </div>
