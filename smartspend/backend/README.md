@@ -1,5 +1,8 @@
 # SmartSpend Backend API
 
+**🌐 Live site: [https://smartspend.chat](https://smartspend.chat)**
+**🔗 API base URL: [https://smartspend-vt5x.onrender.com/api](https://smartspend-vt5x.onrender.com/api)**
+
 A Node.js + Express + MongoDB backend for the SmartSpend personal finance tracker.
 
 ## Features

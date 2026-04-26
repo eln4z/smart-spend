@@ -1,5 +1,7 @@
 # SmartSpend
 
+**🌐 Live site: [https://smartspend.chat](https://smartspend.chat)**
+
 A simple web-based budgeting and spending insight application for students and young adults.
 
 ## Features
