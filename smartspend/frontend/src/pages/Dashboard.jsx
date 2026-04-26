@@ -1621,8 +1621,8 @@ export default function Dashboard() {
           justifyContent: "center",
           zIndex: 1000
         }}>
-          <div style={{ background: "white", padding: 32, borderRadius: 12, width: 400, maxWidth: "90%" }}>
-            <h3 style={{ marginBottom: 20 }}>➕ Add New Expense</h3>
+          <div className="modal-box">
+            <h3>➕ Add New Expense</h3>
             
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Date</label>
