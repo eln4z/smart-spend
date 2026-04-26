@@ -19,8 +19,6 @@ A RESTful Node.js + Express + MongoDB backend for the SmartSpend personal financ
 - 📈 **Predictions** — Spending forecasts and trend analysis
 - 💡 **Smart Tips** — Personalised financial advice based on spending data
 
----
-
 ## Tech Stack
 
 | Layer      | Technology                    |
@@ -33,8 +31,6 @@ A RESTful Node.js + Express + MongoDB backend for the SmartSpend personal financ
 | Validation | express-validator             |
 | Security   | bcryptjs (password hashing)   |
 | Deployment | Render                        |
-
----
 
 ## Running Locally
 
@@ -84,8 +80,6 @@ This creates a demo account you can log in with:
 | -------- | ------------------- |
 | Email    | demo@smartspend.com |
 | Password | demo123             |
-
----
 
 ## API Endpoints
 
@@ -201,8 +195,6 @@ backend/
 ├── package.json
 └── .env
 ```
-
----
 
 ## Author
 
