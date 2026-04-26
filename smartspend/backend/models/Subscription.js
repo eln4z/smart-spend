@@ -1,4 +1,4 @@
-forever logs 0const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const subscriptionSchema = new mongoose.Schema(
   {
