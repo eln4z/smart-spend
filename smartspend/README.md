@@ -1,189 +1,211 @@
-# SmartSpend Backend API
+# SmartSpend — User Guide
 
-**🌐 Live site: [https://smartspend.chat](https://smartspend.chat)**
-**🔗 API base URL: [https://smartspend-vt5x.onrender.com/api](https://smartspend-vt5x.onrender.com/api)**
+> **Final Year Computing Project** · Goldsmiths, University of London · 2025/26  
+> **Author:** Elnaz Mohammadi · Student Reference: 33829729
 
-A Node.js + Express + MongoDB backend for the SmartSpend personal finance tracker.
+---
 
-## Features
+## What the Software Does
 
-- 🔐 **Authentication** - JWT-based user registration and login
-- 💰 **Transactions** - Full CRUD for income/expense tracking
-- 📂 **Categories** - Custom spending categories with icons and colors
-- 📊 **Budgets** - Set and track category budgets with alerts
-- 🔄 **Subscriptions** - Track recurring payments
-- 📈 **Predictions** - AI-powered spending forecasts
-- 💡 **Smart Tips** - Personalized savings recommendations
+SmartSpend is a web-based personal finance tracker designed for students and young adults. It allows users to log income and expenses, monitor spending by category, track subscriptions, and receive AI-powered insights and financial tips — all through a clean, accessible browser interface.
 
-## Tech Stack
+---
 
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Database:** MongoDB with Mongoose ODM
-- **Authentication:** JWT (JSON Web Tokens)
-- **Validation:** express-validator
-- **Security:** bcryptjs for password hashing
+## Live Deployment (Recommended — No Setup Required)
 
-## Getting Started
+The easiest way to use SmartSpend is via the hosted version:
+
+|                      |                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| **Website**          | [https://smartspend.chat](https://smartspend.chat)                                                 |
+| **API**              | [https://smartspend-vt5x.onrender.com/api](https://smartspend-vt5x.onrender.com/api)               |
+| **API health check** | [https://smartspend-vt5x.onrender.com/api/health](https://smartspend-vt5x.onrender.com/api/health) |
+
+> **Note:** The backend is hosted on Render's free tier, which spins down after inactivity. If the site takes 10–20 seconds to load on first visit, wait for the server to wake up and then refresh.
+
+### Test / Demo Account
+
+| Field    | Value                 |
+| -------- | --------------------- |
+| Email    | `demo@smartspend.com` |
+| Password | `demo123`             |
+
+This account is pre-loaded with realistic sample transactions across multiple categories, subscriptions, and spending history so all features can be explored immediately.
+
+You can also register a new account using any email and password.
+
+---
+
+## Core Features Implemented
+
+- **Dashboard** — Financial health score (0–100), spending overview cards, pie chart by category, recent transactions, AI pattern detection, monthly reflection, and personalised SmartTips recommendation
+- **Add Expense** — Add a new expense transaction directly from the Dashboard with date, description, amount, and category
+- **Breakdown** — Spending breakdown by category with pie chart, sortable table, and week-by-week bar chart
+- **Prediction** — End-of-month balance forecast based on weekly spend and upcoming subscriptions; subscription management (add, toggle active, delete)
+- **Categories** — View all transactions grouped by category; reassign categories per transaction
+- **Smart Tips** — Six financial education articles covering budgeting, saving, the 50/30/20 rule, subscriptions, and more
+- **Profile** — Set monthly budget, monthly income, bio, and choose an avatar
+- **Settings** — Quick-add transaction, dark mode toggle, export transactions to CSV
+- **Authentication** — Secure JWT-based register/login; all data is private per user
+- **ChatBot** — Built-in assistant that answers questions about your spending data
+
+---
+
+## Running Locally
+
+Follow these steps only if you want to run SmartSpend on your own machine instead of using the live site.
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- MongoDB running locally or a MongoDB Atlas account
+| Requirement | Version                            | Download                                           |
+| ----------- | ---------------------------------- | -------------------------------------------------- |
+| Node.js     | 18 or higher                       | [nodejs.org](https://nodejs.org/)                  |
+| npm         | comes with Node.js                 | —                                                  |
+| MongoDB     | Atlas (cloud) **or** local install | [mongodb.com/atlas](https://www.mongodb.com/atlas) |
 
-### Installation
+---
 
-1. Install dependencies:
+### Step 1 — Get the code
 
-   ```bash
-   cd backend
-   npm install
-   ```
+If you received the project as a ZIP, extract it. Otherwise clone from GitHub:
 
-2. Configure environment variables:
+```bash
+git clone https://github.com/eln4z/smart-spend.git
+cd smart-spend/smartspend
+```
 
-   ```bash
-   cp .env.example .env
-   # Edit .env with your MongoDB URI and JWT secret
-   ```
+---
 
-3. Start the server:
+### Step 2 — Set up the Backend
 
-   ```bash
-   # Development (with auto-reload)
-   npm run dev
+```bash
+cd backend
+npm install
+```
 
-   # Production
-   npm start
-   ```
+Create a file called `.env` inside the `backend/` folder with the following content:
 
-4. (Optional) Seed demo data:
-   ```bash
-   npm run seed
-   ```
+```env
+MONGODB_URI=mongodb+srv://ellemo203_db_user:Elnaz2003@smartspend.ybzrmxl.mongodb.net/smartspend?retryWrites=true&w=majority
+JWT_SECRET=smartspend_jwt_secret_2024
+PORT=5001
+NODE_ENV=development
+```
 
-## API Endpoints
+> This uses the same MongoDB Atlas database as the live site. If you prefer a local MongoDB instance, replace `MONGODB_URI` with `mongodb://localhost:27017/smartspend` and run `node seeds/seedData.js` to populate it.
 
-### Authentication
+Start the backend server:
 
-| Method | Endpoint                    | Description       |
-| ------ | --------------------------- | ----------------- |
-| POST   | `/api/auth/register`        | Register new user |
-| POST   | `/api/auth/login`           | Login user        |
-| GET    | `/api/auth/me`              | Get current user  |
-| POST   | `/api/auth/change-password` | Change password   |
+```bash
+node server.js
+```
 
-### Users
+You should see:
 
-| Method | Endpoint              | Description      |
-| ------ | --------------------- | ---------------- |
-| GET    | `/api/users/profile`  | Get user profile |
-| PUT    | `/api/users/profile`  | Update profile   |
-| PUT    | `/api/users/settings` | Update settings  |
-| DELETE | `/api/users/account`  | Delete account   |
+```
+Server running on port 5001
+✅ Connected to MongoDB
+```
 
-### Transactions
+Leave this terminal running.
 
-| Method | Endpoint                    | Description            |
-| ------ | --------------------------- | ---------------------- |
-| GET    | `/api/transactions`         | Get all transactions   |
-| GET    | `/api/transactions/summary` | Get spending summary   |
-| GET    | `/api/transactions/:id`     | Get single transaction |
-| POST   | `/api/transactions`         | Create transaction     |
-| PUT    | `/api/transactions/:id`     | Update transaction     |
-| DELETE | `/api/transactions/:id`     | Delete transaction     |
+---
 
-### Categories
+### Step 3 — Set up the Frontend
 
-| Method | Endpoint                    | Description         |
-| ------ | --------------------------- | ------------------- |
-| GET    | `/api/categories`           | Get all categories  |
-| GET    | `/api/categories/:id`       | Get single category |
-| GET    | `/api/categories/:id/stats` | Get category stats  |
-| POST   | `/api/categories`           | Create category     |
-| PUT    | `/api/categories/:id`       | Update category     |
-| DELETE | `/api/categories/:id`       | Delete category     |
+Open a **new terminal** and run:
 
-### Budgets
+```bash
+cd frontend
+npm install
+```
 
-| Method | Endpoint              | Description                   |
-| ------ | --------------------- | ----------------------------- |
-| GET    | `/api/budgets`        | Get all budgets with spending |
-| GET    | `/api/budgets/alerts` | Get budget alerts             |
-| POST   | `/api/budgets`        | Create budget                 |
-| PUT    | `/api/budgets/:id`    | Update budget                 |
-| DELETE | `/api/budgets/:id`    | Delete budget                 |
+Create a file called `.env` inside the `frontend/` folder:
 
-### Subscriptions
+```env
+VITE_API_URL=http://localhost:5001/api
+```
 
-| Method | Endpoint                        | Description              |
-| ------ | ------------------------------- | ------------------------ |
-| GET    | `/api/subscriptions`            | Get all subscriptions    |
-| GET    | `/api/subscriptions/summary`    | Get subscription summary |
-| POST   | `/api/subscriptions`            | Create subscription      |
-| PUT    | `/api/subscriptions/:id`        | Update subscription      |
-| PUT    | `/api/subscriptions/:id/toggle` | Toggle active status     |
-| DELETE | `/api/subscriptions/:id`        | Delete subscription      |
+Start the frontend:
 
-### Predictions
+```bash
+npm run dev
+```
 
-| Method | Endpoint                    | Description              |
-| ------ | --------------------------- | ------------------------ |
-| GET    | `/api/predictions/monthly`  | Get monthly prediction   |
-| GET    | `/api/predictions/category` | Get category predictions |
-| GET    | `/api/predictions/trends`   | Get spending trends      |
+Open the URL shown in the terminal — usually **http://localhost:5173**
 
-### Smart Tips
+---
 
-| Method | Endpoint                 | Description             |
-| ------ | ------------------------ | ----------------------- |
-| GET    | `/api/tips`              | Get personalized tips   |
-| GET    | `/api/tips/savings-goal` | Get savings goal advice |
+### Step 4 — Log in
 
-## Demo Account
+Use the demo account or register a new one:
 
-After running the seed script:
+| Field    | Value                 |
+| -------- | --------------------- |
+| Email    | `demo@smartspend.com` |
+| Password | `demo123`             |
 
-- **Email:** demo@smartspend.com
-- **Password:** demo123
+---
 
-## Environment Variables
+## Dependencies
 
-| Variable      | Description               | Default                                |
-| ------------- | ------------------------- | -------------------------------------- |
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/smartspend` |
-| `JWT_SECRET`  | Secret for JWT signing    | -                                      |
-| `PORT`        | Server port               | `5000`                                 |
-| `NODE_ENV`    | Environment               | `development`                          |
+### Backend (`backend/package.json`)
+
+| Package           | Purpose                       |
+| ----------------- | ----------------------------- |
+| express           | Web server framework          |
+| mongoose          | MongoDB object modelling      |
+| jsonwebtoken      | JWT authentication            |
+| bcryptjs          | Password hashing              |
+| express-validator | Request validation            |
+| cors              | Cross-origin resource sharing |
+| dotenv            | Environment variable loading  |
+
+Install all with: `npm install` inside `backend/`
+
+### Frontend (`frontend/package.json`)
+
+| Package                    | Purpose                   |
+| -------------------------- | ------------------------- |
+| react / react-dom          | UI framework              |
+| react-router-dom           | Client-side routing       |
+| chart.js / react-chartjs-2 | Charts and visualisations |
+| vite                       | Build tool and dev server |
+
+Install all with: `npm install` inside `frontend/`
+
+---
+
+## Known Limitations
+
+| Limitation                    | Detail                                                                                                                                         |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cold start delay**          | The Render free tier spins down the backend after ~15 min of inactivity. First load may take 10–20 seconds. Refresh if the page appears blank. |
+| **No real bank sync**         | Transactions must be entered manually or imported via CSV. There is no Open Banking / Plaid integration.                                       |
+| **No push notifications**     | Subscription and budget alerts are shown inside the app only — no email or mobile push notifications.                                          |
+| **No recurring transactions** | Transactions must be added individually; there is no automatic recurring entry system.                                                         |
+| **No offline support**        | The app requires an internet connection to the backend API at all times.                                                                       |
+| **Single currency**           | The app displays amounts in GBP (£) only. Currency conversion is not implemented.                                                              |
+| **No multi-user sharing**     | Each account is fully isolated. Shared household budgets are not supported.                                                                    |
+| **CSV import format**         | The import expects a specific CSV column order: `Date, Description, Amount, Category, Type`. Other formats will not parse correctly.           |
+
+---
 
 ## Project Structure
 
 ```
-backend/
-├── models/           # Mongoose schemas
-│   ├── User.js
-│   ├── Transaction.js
-│   ├── Category.js
-│   ├── Budget.js
-│   └── Subscription.js
-├── routes/           # Express routes
-│   ├── auth.js
-│   ├── users.js
-│   ├── transactions.js
-│   ├── categories.js
-│   ├── budgets.js
-│   ├── subscriptions.js
-│   ├── predictions.js
-│   └── tips.js
-├── middleware/       # Custom middleware
-│   └── auth.js
-├── seeds/            # Database seeding
-│   └── seedData.js
-├── server.js         # Entry point
-├── package.json
-└── .env
+smartspend/
+├── backend/              # Node.js + Express API
+│   ├── models/           # Mongoose schemas (User, Transaction, Category, Budget, Subscription)
+│   ├── routes/           # REST API route handlers
+│   ├── middleware/        # JWT auth middleware
+│   ├── seeds/            # Demo data seed script
+│   └── server.js         # Entry point
+├── frontend/             # React + Vite app
+│   └── src/
+│       ├── pages/        # Route-level components (Dashboard, Breakdown, etc.)
+│       ├── components/   # Reusable UI (Navbar, ChatBot, AlertsPanel)
+│       ├── context/      # Global state (AuthContext, DataContext)
+│       └── services/     # API communication layer
+└── README.md             # This file
 ```
-
-## License
-
-ISC
