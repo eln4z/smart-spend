@@ -5,7 +5,7 @@
 
 A Node.js + Express + MongoDB backend for the SmartSpend personal finance tracker.
 
-## Features j
+## Features
 
 - 🔐 **Authentication** - JWT-based user registration and login
 - 💰 **Transactions** - Full CRUD for income/expense tracking
