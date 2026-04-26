@@ -17,7 +17,8 @@ export default function Settings() {
     date: new Date().toISOString().split("T")[0],
     description: "",
     amount: "",
-    category: categories[0] || "Food"
+    category: categories[0] || "Food",
+    type: "expense",
   });
 
   const [settings, setSettings] = useState({
@@ -81,26 +82,27 @@ export default function Settings() {
   };
 
   const handleAddTransaction = async () => {
-    if (newTransaction.description && newTransaction.amount) {
-      // Find the category object to get its ID
+    if (!newTransaction.description || !newTransaction.amount) return;
+    try {
       const categoryObj = apiCategories?.find(c => c.name === newTransaction.category);
-      
       await addTransaction({
         date: newTransaction.date,
         description: newTransaction.description,
         amount: parseFloat(newTransaction.amount),
-        category: newTransaction.category,
-        categoryId: categoryObj?._id,
-        type: 'expense'
+        category: categoryObj?._id,
+        type: newTransaction.type || 'expense',
       });
       alert("Transaction added!");
       setNewTransaction({
         date: new Date().toISOString().split("T")[0],
         description: "",
         amount: "",
-        category: categories[0] || "Food"
+        category: categories[0] || "Food",
+        type: "expense",
       });
       setShowAddModal(false);
+    } catch (err) {
+      alert("Failed to add transaction: " + err.message);
     }
   };
 
@@ -405,6 +407,18 @@ export default function Settings() {
                   borderRadius: 8
                 }}
               />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Type</label>
+              <select
+                value={newTransaction.type}
+                onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value })}
+                style={{ width: "100%", padding: 12, border: "1px solid #ddd", borderRadius: 8 }}
+              >
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
             </div>
 
             <div style={{ marginBottom: 16 }}>
